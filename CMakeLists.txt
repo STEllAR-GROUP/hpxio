@@ -51,13 +51,13 @@ endif()
 ################################################################################
 # Additional CMake configuration
 ################################################################################
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} )
+set(CMAKE_MODULE_PATH "${hpxio_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} )
 
 
 
 ################################################################################
 # Build and Create Executable
 ################################################################################
-
+include_directories("${hpxio_SOURCE_DIR}" "${CMAKE_BINARY_DIR}")
 add_subdirectory(src)
 
