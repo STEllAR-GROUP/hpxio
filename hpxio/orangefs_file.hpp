@@ -8,7 +8,7 @@
 
 #include <hpx/hpx_fwd.hpp>
 #include <hpx/include/client.hpp>
-#include <hpx/components/io/server/orangefs_file.hpp>
+#include <hpxio/server/orangefs_file.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace hpx { namespace io

@@ -8,7 +8,7 @@
 
 #include <hpx/hpx_fwd.hpp>
 #include <hpx/include/client.hpp>
-#include <hpx/components/io/server/local_file.hpp>
+#include <hpxio/server/local_file.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace hpx { namespace io
