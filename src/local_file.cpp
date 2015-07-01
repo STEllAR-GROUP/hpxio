@@ -6,8 +6,6 @@
 #include <hpx/hpx.hpp>
 #include <hpx/include/components.hpp>
 #include <hpx/include/serialization.hpp>
-#include <hpx/util/portable_binary_iarchive.hpp>
-#include <hpx/util/portable_binary_oarchive.hpp>
 
 #include <hpxio/local_file.hpp>
 

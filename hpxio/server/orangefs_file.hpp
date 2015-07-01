@@ -12,7 +12,6 @@
 #include <hpx/runtime/components/component_type.hpp>
 #include <hpx/runtime/components/server/locking_hook.hpp>
 #include <hpx/runtime/components/server/managed_component_base.hpp>
-#include <hpx/util/locality_result.hpp>
 
 /* ------------------------  added pvfs header stuff --------------- */
 
