@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
 ################################################################################
 # project metadata
 ################################################################################
-project(hpxio)
+project(hpxio CXX)
 
 set(HPXIO_MAJOR_VERSION 0)
 set(HPXIO_MINOR_VERSION 1)
