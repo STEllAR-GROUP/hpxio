@@ -1,3 +1,4 @@
+//  Copyright (c) 2015 Alireza Kheirkhahan
 //  Copyright (c) 2014 Shuangyang Yang
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying

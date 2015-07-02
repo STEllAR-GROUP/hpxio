@@ -1,3 +1,8 @@
+# Copyright (c) 2015 Alireza Kheirkhahan
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 
 # We require at least CMake V2.8.10
 cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
