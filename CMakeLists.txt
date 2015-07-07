@@ -65,6 +65,7 @@ set(CMAKE_MODULE_PATH "${hpxio_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} )
 ################################################################################
 include_directories("${hpxio_SOURCE_DIR}" "${CMAKE_BINARY_DIR}")
 add_subdirectory(src)
+add_subdirectory(examples)
 
 ################################################################################
 # Installation
