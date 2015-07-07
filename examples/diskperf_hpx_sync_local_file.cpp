@@ -7,7 +7,7 @@
 
 // disk performance benchmark using HPX and local_file class sync APIs
 
-#include <hpx/components/io/local_file.hpp>
+#include <hpxio/local_file.hpp>
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
@@ -25,6 +25,8 @@
 #include <boost/cstdint.hpp>
 #include <boost/format.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/foreach.hpp>
 
 using boost::program_options::variables_map;
 using boost::program_options::options_description;
