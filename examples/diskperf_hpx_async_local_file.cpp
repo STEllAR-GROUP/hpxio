@@ -1,4 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
+//  Copyright (c)      2015 Alireza Kheirkhahan
 //  Copyright (c)      2014 Shuangyang Yang
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -7,7 +8,7 @@
 
 // disk performance benchmark using local_file class async APIs
 
-#include <hpx/components/io/local_file.hpp>
+#include <hpxio/local_file.hpp>
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
@@ -25,6 +26,8 @@
 #include <boost/cstdint.hpp>
 #include <boost/format.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/foreach.hpp>
 
 using boost::program_options::variables_map;
 using boost::program_options::options_description;
