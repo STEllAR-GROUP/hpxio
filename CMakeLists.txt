@@ -23,12 +23,7 @@ set(HPXIO_LIBRARY_VERSION "${HPXIO_VERSION}")
 # Find and Include HPX
 ################################################################################
 if(NOT HPX_ROOT)
-   #  message("HPX_DIR not set, checking environment variables...")
-   #  set(HPX_DIR $ENV{HPX_ROOT}/lib/cmake/hpx)
-   #  if(NOT DEFINED HPX_DIR)
    message(FATAL_ERROR "HPX_ROOT not set, unable to find HPX!")
-   #  endif()
-   #  set(HPX_ROOT /usr/local)
 endif()
 
 if(HPX_ROOT AND NOT HPX_DIR)
@@ -65,6 +60,7 @@ set(CMAKE_MODULE_PATH "${hpxio_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} )
 ################################################################################
 include_directories("${hpxio_SOURCE_DIR}" "${CMAKE_BINARY_DIR}")
 add_subdirectory(src)
+add_subdirectory(examples)
 
 ################################################################################
 # Installation
