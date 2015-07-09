@@ -18,9 +18,14 @@ if(ORANGEFS_FOUND)
 	include_directories(${ORANGEFS_INCLUDE_DIR})
 	set(example_programs
                 ${example_programs}
-		diskperf_hpx_sync_orangefs_file)
+		diskperf_hpx_sync_orangefs_file
+		diskperf_hpx_async_orangefs_pxfs_file)
 	set(diskperf_hpx_sync_orangefs_file_FLAGS DEPENDENCIES
                 iostreams_component orangefs_file_component)
+	set(diskperf_hpx_async_orangefs_pxfs_file_FLAGS DEPENDENCIES
+                iostreams_component orangefs_file_component
+		${ORANGEFS_LIBRARY} pthread dl rt crypto)
+
 endif()
 
 foreach(example_program ${example_programs})
