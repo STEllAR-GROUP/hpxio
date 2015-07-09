@@ -14,13 +14,13 @@
 #include <sys/times.h>
 #include <vector>
 
+#include <hpx/util/high_resolution_timer.hpp>
+
 #include <boost/cstdint.hpp>
 #include <boost/format.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/thread.hpp>
 #include <boost/program_options.hpp>
-
-#include <hpx/util/high_resolution_timer.hpp>
 
 using boost::program_options::variables_map;
 using boost::program_options::options_description;

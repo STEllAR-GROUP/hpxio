@@ -8,7 +8,8 @@ find_package(OrangeFS)
 
 set(example_programs
 	diskperf_hpx_sync_local_file
-	diskperf_hpx_async_local_file)
+	diskperf_hpx_async_local_file
+	diskperf_thread_sync_local_orangefs)
 set(diskperf_hpx_sync_local_file_FLAGS DEPENDENCIES
 	iostreams_component local_file_component)
 set(diskperf_hpx_async_local_file_FLAGS DEPENDENCIES
