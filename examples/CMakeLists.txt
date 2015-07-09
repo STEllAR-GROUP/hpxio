@@ -25,7 +25,8 @@ if(ORANGEFS_FOUND)
 	set(diskperf_hpx_async_orangefs_pxfs_file_FLAGS DEPENDENCIES
                 iostreams_component orangefs_file_component
 		${ORANGEFS_LIBRARY} pthread dl rt crypto)
-
+	set(diskperf_thread_sync_local_orangefs_FLAGS DEPENDENCIES
+                ${ORANGEFS_LIBRARY} pthread dl rt crypto)
 endif()
 
 foreach(example_program ${example_programs})
