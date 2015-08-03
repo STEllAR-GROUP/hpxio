@@ -27,7 +27,7 @@ if(NOT HPX_ROOT)
 endif()
 
 if(HPX_ROOT AND NOT HPX_DIR)
-   set(HPX_DIR "${HPX_ROOT}/lib/cmake/hpx")
+   set(HPX_DIR "${HPX_ROOT}/lib/cmake/HPX")
 endif()
 
 # Instruct cmake to find the HPX settings, it looks for HPXConfig.cmake in ${HPX_DIR}
@@ -67,7 +67,7 @@ add_subdirectory(examples)
 ################################################################################
 install(
   DIRECTORY hpxio
-  DESTINATION include/hpxio
+  DESTINATION include
   FILES_MATCHING PATTERN "*.hpp"
   PATTERN ".git" EXCLUDE
   PATTERN "CMakeFiles" EXCLUDE
