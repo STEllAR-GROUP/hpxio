@@ -14,6 +14,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace hpx { namespace io
 {
+
     ///////////////////////////////////////////////////////////////////////////
     // The \a local_file class is the client side representation of a
     // concrete \a server#local_file component
@@ -138,10 +139,10 @@ namespace hpx { namespace io
         {
             return lseek(offset, whence).get();
         }
+
     };
 
 }} // hpx::io
-
 
 #endif
 

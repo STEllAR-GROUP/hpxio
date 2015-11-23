@@ -14,7 +14,7 @@ find_path(ORANGEFS_INCLUDE_DIR NAMES pxfs.h pvfs2-usrint.h pvfs2.h
   ${PC_ORANGEFS_INCLUDE_DIRS}
   PATH_SUFFIXES include)
 
-find_library(ORANGEFS_LIBRARY NAMES pvfs2 # orangefs pvfs2 orangefsposix
+find_library(ORANGEFS_LIBRARY NAMES orangefs # orangefs pvfs2 orangefsposix
   HINTS
     ${ORANGEFS_ROOT} ENV ORANGEFS_ROOT
     ${PC_ORANGEFS_LIBDIR}

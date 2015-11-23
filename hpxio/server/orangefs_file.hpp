@@ -20,8 +20,7 @@
 extern "C" {
 #endif
 
-#include <pvfs2-usrint.h>
-#include <pvfs2.h>
+#include <orange.h>
 
 #ifdef __cplusplus
 } //extern "C" {

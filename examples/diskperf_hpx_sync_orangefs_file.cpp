@@ -9,7 +9,6 @@
 // disk performance benchmark using hpx and sync APIs of orangefs_file
 
 #include <hpxio/orangefs_file.hpp>
-#include <hpxio/pxfs_file.hpp>
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
