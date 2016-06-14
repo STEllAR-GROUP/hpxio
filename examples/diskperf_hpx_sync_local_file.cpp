@@ -19,6 +19,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
+#include <mutex>
 #include <sys/times.h>
 #include <vector>
 
@@ -224,7 +225,7 @@ void run_local_file_test(test_info_type const& test_info)
     hpx::lcos::local::spinlock mtx;
     hpx::lcos::wait_each(
             hpx::util::unwrapped([&](RESULT r) {
-                hpx::lcos::local::spinlock::scoped_lock lk(mtx);
+                std::lock_guard<hpx::lcos::local::spinlock> lk(mtx);
                 result_vector.push_back(r);
                 }),
             futures);
