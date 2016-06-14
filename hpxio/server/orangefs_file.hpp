@@ -7,7 +7,6 @@
 #if !defined(HPX_COMPONENTS_IO_SERVER_ORANGEFS_FILE_HPP_SEP_01_2014_1223PM)
 #define HPX_COMPONENTS_IO_SERVER_ORANGEFS_FILE_HPP_SEP_01_2014_1223PM
 
-#include <hpx/hpx_fwd.hpp>
 #include <hpx/include/thread_executors.hpp>
 #include <hpx/runtime/actions/component_action.hpp>
 #include <hpx/runtime/components/component_type.hpp>

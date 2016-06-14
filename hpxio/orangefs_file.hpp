@@ -7,7 +7,6 @@
 #if !defined(HPX_COMPONENTS_IO_ORANGEFS_FILE_HPP_SEP_01_2014_1218PM)
 #define HPX_COMPONENTS_IO_ORANGEFS_FILE_HPP_SEP_01_2014_1218PM
 
-#include <hpx/hpx_fwd.hpp>
 #include <hpx/include/client.hpp>
 #include <hpxio/server/orangefs_file.hpp>
 

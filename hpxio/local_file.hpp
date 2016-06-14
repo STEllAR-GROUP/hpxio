@@ -7,7 +7,6 @@
 #if !defined(HPX_COMPONENTS_IO_LOCAL_FILE_HPP_AUG_26_2014_1102AM)
 #define HPX_COMPONENTS_IO_LOCAL_FILE_HPP_AUG_26_2014_1102AM
 
-#include <hpx/hpx_fwd.hpp>
 #include <hpx/include/client.hpp>
 #include <hpxio/server/local_file.hpp>
 

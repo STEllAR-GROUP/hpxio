@@ -7,7 +7,6 @@
 #if !defined(HPX_COMPONENTS_IO_SERVER_LOCAL_FILE_HPP_AUG_27_2014_1200AM)
 #define HPX_COMPONENTS_IO_SERVER_LOCAL_FILE_HPP_AUG_27_2014_1200AM
 
-#include <hpx/hpx_fwd.hpp>
 #include <hpx/include/thread_executors.hpp>
 #include <hpx/runtime/actions/component_action.hpp>
 #include <hpx/runtime/components/server/locking_hook.hpp>
