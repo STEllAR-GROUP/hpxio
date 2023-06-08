@@ -8,13 +8,16 @@
 // disk performance benchmark using HPX and local_file class sync APIs
 
 #include <hpxio/local_file.hpp>
-#include <hpx/hpx_init.hpp>
+#include <hpx/algorithm.hpp>
+#include <hpx/execution.hpp>
+#include <hpx/init.hpp>
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
-#include <hpx/include/iostreams.hpp>
+#include <hpx/iostream.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/runtime.hpp>
-#include <hpx/util/high_resolution_timer.hpp>
+#include <hpx/chrono.hpp>
+#include <hpx/modules/pack_traversal.hpp>
 
 #include <fstream>
 #include <cstdlib>
@@ -29,12 +32,12 @@
 #include <boost/serialization/access.hpp>
 #include <boost/foreach.hpp>
 
-using boost::program_options::variables_map;
-using boost::program_options::options_description;
-using boost::program_options::value;
+using hpx::program_options::variables_map;
+using hpx::program_options::options_description;
+using hpx::program_options::value;
 
-using hpx::naming::id_type;
-using hpx::util::high_resolution_timer;
+using hpx::id_type;
+using hpx::chrono::high_resolution_timer;
 using hpx::init;
 using hpx::finalize;
 using hpx::find_here;
@@ -115,14 +118,15 @@ RESULT local_file_test(test_info_type const& test_info, int const proc)
            sprintf(filename, "%s/loc_%d_file%d.%ld", test_info.path.c_str(),
                    hpx::get_locality_id(), proc, i);
 
-           lf_vector.push_back(hpx::io::local_file::create(hpx::find_here()));
+//           lf_vector.push_back(hpx::io::local_file::create(hpx::find_here()));
+            lf_vector.push_back(hpx::new_<hpx::io::local_file>(hpx::find_here()));
 
            lf_vector[i].open_sync(std::string(filename), "w");
 
            if (!lf_vector[i].is_open_sync())
            {
                hpx::cerr << "Unable to open local file " <<
-                   filename << hpx::endl;
+                   filename << std::endl;
                continue;
            }
 
@@ -140,7 +144,7 @@ RESULT local_file_test(test_info_type const& test_info, int const proc)
                if (rt != test_info.bufsiz)
                {
                    hpx::cerr << "loc " << hpx::get_locality_id() << " proc " << proc
-                       << ": error! not writing all bytes of one block ."<<hpx::endl;
+                       << ": error! not writing all bytes of one block ."<<std::endl;
                }
            }
        }
@@ -159,13 +163,14 @@ RESULT local_file_test(test_info_type const& test_info, int const proc)
        {
            sprintf(filename, "%s/loc_%d_file%d.%ld", test_info.path.c_str(),
                    hpx::get_locality_id(), proc, i);
-           lf_vector.push_back(hpx::io::local_file::create(hpx::find_here()));
+//           lf_vector.push_back(hpx::io::local_file::create(hpx::find_here()));
+           lf_vector.push_back(hpx::new_<hpx::io::local_file>(hpx::find_here()));
            lf_vector[i].open_sync(std::string(filename), "r");
 
            if (!lf_vector[i].is_open_sync())
            {
                hpx::cerr << "Unable to open local file " <<
-                   filename << hpx::endl;
+                   filename << std::endl;
                continue;
            }
 
@@ -176,7 +181,7 @@ RESULT local_file_test(test_info_type const& test_info, int const proc)
                if (static_cast<ssize_t>(buf.size()) != test_info.bufsiz)
                {
                    hpx::cerr << "loc " << hpx::get_locality_id() << " proc " << proc
-                       << ": error! not reading all bytes of one block ."<<hpx::endl;
+                       << ": error! not reading all bytes of one block ."<<std::endl;
                }
            }
        }
@@ -198,10 +203,11 @@ HPX_PLAIN_ACTION(local_file_test, local_file_test_action);
 ///////////////////////////////////////////////////////////////////////////////
 void run_local_file_test(test_info_type const& test_info)
 {
+    hpx::cout << "In hpx plain action\n";
     // Find the localities connected to this application.
     std::vector<hpx::id_type> localities = hpx::find_all_localities();
 
-    std::vector<hpx::lcos::future<RESULT> > futures;
+    std::vector<hpx::future<RESULT> > futures;
     futures.reserve(test_info.procs * localities.size());
 
     std::vector<RESULT> result_vector;
@@ -211,7 +217,7 @@ void run_local_file_test(test_info_type const& test_info)
     // Keep track of the time required to execute.
     high_resolution_timer t;
 
-    BOOST_FOREACH(hpx::naming::id_type const& node, localities)
+    BOOST_FOREACH(hpx::id_type const& node, localities)
     {
         // Initiate an asynchronous IO operation wait for it to complete without
         // blocking any of the HPX thread-manager threads.
@@ -222,10 +228,10 @@ void run_local_file_test(test_info_type const& test_info)
         }
     }
 
-    hpx::lcos::local::spinlock mtx;
-    hpx::lcos::wait_each(
-            hpx::util::unwrapped([&](RESULT r) {
-                std::lock_guard<hpx::lcos::local::spinlock> lk(mtx);
+    hpx::spinlock mtx;
+    hpx::wait_each(
+            hpx::unwrapping([&](RESULT r) {
+                std::lock_guard<hpx::spinlock> lk(mtx);
                 result_vector.push_back(r);
                 }),
             futures);
@@ -234,7 +240,7 @@ void run_local_file_test(test_info_type const& test_info)
     double tt = t.elapsed();
 
     hpx::cout << "local_file with HPX and sync APIs performance results:"
-        << hpx::endl;
+        << std::endl;
 
     if(test_info.rfiles > 0)
     {
@@ -305,13 +311,14 @@ void run_local_file_test(test_info_type const& test_info)
                  max_time / (1024*1024)));
     }
 
-    hpx::cout<<hpx::endl;
+    hpx::cout<<std::endl;
 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main(variables_map& vm)
 {
+    hpx::cout << "In hpx runtime" << std::endl;
     // extract command line argument
     boost::uint64_t rfiles = vm["rfiles"].as<boost::uint64_t>();
     boost::uint64_t wfiles = vm["wfiles"].as<boost::uint64_t>();
@@ -324,26 +331,26 @@ int hpx_main(variables_map& vm)
 
     if(procs > MAXPROCS)
     {
-        hpx::cerr << "too many thread numbers!" << hpx::endl;
+        hpx::cerr << "too many thread numbers!" << std::endl;
         argument_error = true;
     }
 
     if(rfiles == 0 && wfiles == 0)
     {
-        hpx::cerr << "need to specify either to read or write files" << hpx::endl;
+        hpx::cerr << "need to specify either to read or write files" << std::endl;
         argument_error = true;
     }
 
     if(rfiles > 0 && wfiles > 0)
     {
-        hpx::cerr << "Can't read and write in the same test" << hpx::endl;
+        hpx::cerr << "Can't read and write in the same test" << std::endl;
         argument_error = true;
     }
 
     if (vm.count("path")) {
         path = vm["path"].as<std::string>();
     } else {
-        hpx::cerr << "Need to specify test path!!" << hpx::endl;
+        hpx::cerr << "Need to specify test path!!" << std::endl;
         argument_error = true;
     }
 
@@ -352,7 +359,7 @@ int hpx_main(variables_map& vm)
     }
 
     hpx::cout << "HPX disk performance benchmark with local_file class "
-    "sync APIs." << hpx::endl;
+    "sync APIs." << std::endl;
 
     // init test_info
     test_info_type test_info(rfiles, wfiles, bufsiz, count,
@@ -381,7 +388,7 @@ int hpx_main(variables_map& vm)
             }
         }
 
-        hpx::cout<<hpx::endl;
+        hpx::cout<<std::endl;
     }
 
     return hpx::finalize();
@@ -406,11 +413,13 @@ int main(int argc, char* argv[])
             "number of bufsiz in a file")
         ( "procs" , value<size_t>()->default_value(1),
             "number of threads used for processing")
-        ( "path" , value<std::string>(),
+        ( "path" , value<std::string>()->default_value(std::string("some_path")),
             "file path to place the testing files.")
         ;
-
+    hpx::local::init_params init_args;
+    init_args.desc_cmdline = desc_commandline;
+    hpx::cout << "Starting hpx runtime" << std::endl;
     // Initialize and run HPX
-    return init(desc_commandline, argc, argv);
+    return hpx::local::init(hpx_main, argc, argv, init_args);
 }
 

@@ -4,13 +4,13 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <hpx/hpx.hpp>
+#include <hpx/config.hpp>
 #include <hpx/include/components.hpp>
 #include <hpx/include/serialization.hpp>
 
-#include <hpxio/local_file.hpp>
+#include <hpxio/server/local_file.hpp>
 
-#include <boost/serialization/serialization.hpp>
+//#include <boost/serialization/serialization.hpp>
 #include <boost/serialization/vector.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////

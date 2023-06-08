@@ -4,8 +4,10 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 
-# We require at least CMake V2.8.10
-cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
+## We require at least CMake V2.8.10
+#cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
+
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 ################################################################################
 # project metadata
@@ -22,13 +24,13 @@ set(HPXIO_LIBRARY_VERSION "${HPXIO_VERSION}")
 ################################################################################
 # Find and Include HPX
 ################################################################################
-if(NOT HPX_ROOT)
-   message(FATAL_ERROR "HPX_ROOT not set, unable to find HPX!")
-endif()
-
-if(HPX_ROOT AND NOT HPX_DIR)
-   set(HPX_DIR "${HPX_ROOT}/lib/cmake/HPX")
-endif()
+#if(NOT HPX_ROOT)
+#   message(FATAL_ERROR "HPX_ROOT not set, unable to find HPX!")
+#endif()
+#
+#if(HPX_ROOT AND NOT HPX_DIR)
+#   set(HPX_DIR "${HPX_ROOT}/lib/cmake/HPX")
+#endif()
 
 # Instruct cmake to find the HPX settings, it looks for HPXConfig.cmake in ${HPX_DIR}
 find_package(HPX)
