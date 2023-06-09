@@ -7,16 +7,13 @@
 #if !defined(HPX_COMPONENTS_IO_SERVER_LOCAL_FILE_HPP_AUG_27_2014_1200AM)
 #define HPX_COMPONENTS_IO_SERVER_LOCAL_FILE_HPP_AUG_27_2014_1200AM
 
-// deprecated
-// #include <hpx/runtime/actions/component_action.hpp>
-// #include <hpx/runtime/components/server/locking_hook.hpp>
-// #include <hpx/runtime/components/server/managed_component_base.hpp>
+#include <hpx/config.hpp>
+#if !defined(HPX_COMPUTE_DEVICE_CODE)
 
 // Headers added by me
 
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
-#include <hpx/config.hpp>
 
 #include <hpx/runtime_local/service_executors.hpp>
 
@@ -36,17 +33,13 @@ typedef _W64 int ssize_t;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace hpx
-{
-    namespace io
-    {
-        namespace server
+namespace hpx::io::server
         {
             // local file class
             // uses C style file APIs
             class local_file
                 : public hpx::components::locking_hook<
-                      hpx::components::managed_component_base<local_file>>
+                      hpx::components::component_base<local_file>>
 
             {
             public:
@@ -323,9 +316,7 @@ namespace hpx
                 std::string file_name_;
             };
 
-        }
-    }
-} // hpx::io::server
+        } // hpx::io::server
 
 ///////////////////////////////////////////////////////////////////////////////
 // Declaration of serialization support for the local_file actions
@@ -348,4 +339,5 @@ HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::pwrite_action,
 HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::lseek_action,
                                 local_file_lseek_action)
 
+#endif
 #endif

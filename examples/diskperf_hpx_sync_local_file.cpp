@@ -10,7 +10,7 @@
 #include <hpxio/local_file.hpp>
 #include <hpx/algorithm.hpp>
 #include <hpx/execution.hpp>
-#include <hpx/init.hpp>
+#include <hpx/hpx_init.hpp>
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
 #include <hpx/iostream.hpp>
@@ -125,7 +125,7 @@ RESULT local_file_test(test_info_type const& test_info, int const proc)
 
            if (!lf_vector[i].is_open_sync())
            {
-               hpx::cerr << "Unable to open local file " <<
+               hpx::cout << "Unable to open local file " <<
                    filename << std::endl;
                continue;
            }
@@ -143,7 +143,7 @@ RESULT local_file_test(test_info_type const& test_info, int const proc)
 
                if (rt != test_info.bufsiz)
                {
-                   hpx::cerr << "loc " << hpx::get_locality_id() << " proc " << proc
+                   hpx::cout << "loc " << hpx::get_locality_id() << " proc " << proc
                        << ": error! not writing all bytes of one block ."<<std::endl;
                }
            }
@@ -169,7 +169,7 @@ RESULT local_file_test(test_info_type const& test_info, int const proc)
 
            if (!lf_vector[i].is_open_sync())
            {
-               hpx::cerr << "Unable to open local file " <<
+               hpx::cout << "Unable to open local file " <<
                    filename << std::endl;
                continue;
            }
@@ -180,7 +180,7 @@ RESULT local_file_test(test_info_type const& test_info, int const proc)
                        test_info.bufsiz, j * test_info.bufsiz);
                if (static_cast<ssize_t>(buf.size()) != test_info.bufsiz)
                {
-                   hpx::cerr << "loc " << hpx::get_locality_id() << " proc " << proc
+                   hpx::cout << "loc " << hpx::get_locality_id() << " proc " << proc
                        << ": error! not reading all bytes of one block ."<<std::endl;
                }
            }
@@ -331,26 +331,26 @@ int hpx_main(variables_map& vm)
 
     if(procs > MAXPROCS)
     {
-        hpx::cerr << "too many thread numbers!" << std::endl;
+        hpx::cout << "too many thread numbers!" << std::endl;
         argument_error = true;
     }
 
     if(rfiles == 0 && wfiles == 0)
     {
-        hpx::cerr << "need to specify either to read or write files" << std::endl;
+        hpx::cout << "need to specify either to read or write files" << std::endl;
         argument_error = true;
     }
 
     if(rfiles > 0 && wfiles > 0)
     {
-        hpx::cerr << "Can't read and write in the same test" << std::endl;
+        hpx::cout << "Can't read and write in the same test" << std::endl;
         argument_error = true;
     }
 
     if (vm.count("path")) {
         path = vm["path"].as<std::string>();
     } else {
-        hpx::cerr << "Need to specify test path!!" << std::endl;
+        hpx::cout << "Need to specify test path!!" << std::endl;
         argument_error = true;
     }
 
@@ -397,6 +397,7 @@ int hpx_main(variables_map& vm)
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
+    std::cout << "Starting cpp runtime" << std::endl;
     // Configure application-specific options
     options_description
        desc_commandline("Usage: " HPX_APPLICATION_STRING " [options]");
@@ -416,10 +417,10 @@ int main(int argc, char* argv[])
         ( "path" , value<std::string>()->default_value(std::string("some_path")),
             "file path to place the testing files.")
         ;
-    hpx::local::init_params init_args;
+    hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;
     hpx::cout << "Starting hpx runtime" << std::endl;
     // Initialize and run HPX
-    return hpx::local::init(hpx_main, argc, argv, init_args);
+    return hpx::init(argc, argv, init_args);
 }
 

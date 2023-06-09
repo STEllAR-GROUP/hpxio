@@ -12,7 +12,7 @@
 #include <hpxio/server/local_file.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace hpx { namespace io
+namespace hpx::io
 {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -144,7 +144,7 @@ public hpx::components::client_base<local_file, server::local_file>
 
     };
 
-}} // hpx::io
+} // hpx::io
 
 #endif
 

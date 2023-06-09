@@ -1,9 +1,9 @@
-# Copyright (c) 2015 Alireza Kheirkhahan
-# Copyright (c) 2013 Shuangyang Yang
+## Copyright (c) 2015 Alireza Kheirkhahan
+## Copyright (c) 2013 Shuangyang Yang
+##
+## Distributed under the Boost Software License, Version 1.0. (See accompanying
+## file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-# Distributed under the Boost Software License, Version 1.0. (See accompanying
-# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
 #find_package(OrangeFS)
 
 set(example_programs
@@ -12,9 +12,9 @@ set(example_programs
 #	diskperf_thread_sync_local_orangefs
 		)
 set(diskperf_hpx_sync_local_file_FLAGS DEPENDENCIES
-#	iostreams_component local_file_component)
-		local_file_component
+		PUBLIC local_file_component
 		HPX::hpx HPX::iostreams_component)
+
 #set(diskperf_hpx_async_local_file_FLAGS DEPENDENCIES
 #	iostreams_component local_file_component)
 
@@ -38,4 +38,8 @@ foreach(example_program ${example_programs})
 	SOURCES ${sources}
 	${${example_program}_FLAGS}
 	FOLDER "Examples/${example_program}")
+
+	target_compile_options(${example_program} PRIVATE -fsanitize=address -g)
+	target_link_options(${example_program} PRIVATE -fsanitize=address -g)
 endforeach()
+
