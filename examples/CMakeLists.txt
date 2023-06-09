@@ -39,7 +39,5 @@ foreach(example_program ${example_programs})
 	${${example_program}_FLAGS}
 	FOLDER "Examples/${example_program}")
 
-	target_compile_options(${example_program} PRIVATE -fsanitize=address -g)
-	target_link_options(${example_program} PRIVATE -fsanitize=address -g)
 endforeach()
 

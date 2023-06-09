@@ -315,7 +315,7 @@ void run_local_file_test(test_info_type const& test_info)
 
 }
 
-///////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 int hpx_main(variables_map& vm)
 {
     hpx::cout << "In hpx runtime" << std::endl;
@@ -419,7 +419,7 @@ int main(int argc, char* argv[])
         ;
     hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;
-    hpx::cout << "Starting hpx runtime" << std::endl;
+    std::cout << "Starting hpx runtime" << std::endl;
     // Initialize and run HPX
     return hpx::init(argc, argv, init_args);
 }
