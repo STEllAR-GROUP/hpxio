@@ -9,9 +9,6 @@
 
 #include <hpx/config.hpp>
 #if !defined(HPX_COMPUTE_DEVICE_CODE)
-
-// Headers added by me
-
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
 
@@ -58,17 +55,6 @@ namespace hpx::io::server
 
                 void open(std::string const &name, std::string const &mode)
                 {
-                    //                // Get a reference to one of the IO specific HPX io_service objects ...
-                    //                hpx::parallel::execution::io_pool_executor scheduler;
-                    //
-                    //                // ... and schedule the handler to run on one of its OS-threads.
-                    //                scheduler.add(hpx::util::bind(&local_file::open_work, this,
-                    //                                              boost::ref(name), boost::ref(mode)));
-                    //
-                    //                // Note that the destructor of the scheduler object will wait for
-                    //                // the scheduled task to finish executing.
-
-                    // Trying to make this work (works for now i guess)
                     hpx::parallel::execution::io_pool_executor exec;
                     hpx::parallel::execution::post(exec, hpx::bind(&local_file::open_work, this, name, mode));
                 }
@@ -90,16 +76,6 @@ namespace hpx::io::server
 
                 void close()
                 {
-                    //                // Get a reference to one of the IO specific HPX io_service objects ...
-                    //                hpx::parallel::execution::io_pool_executor scheduler;
-                    //
-                    //                // ... and schedule the handler to run on one of its OS-threads.
-                    //                scheduler.add(hpx::util::bind(&local_file::close_work, this));
-                    //
-                    //                // Note that the destructor of the scheduler object will wait for
-                    //                // the scheduled task to finish executing.
-
-                    // Trying to make this work (works for now i guess)
                     hpx::parallel::execution::io_pool_executor exec;
                     hpx::parallel::execution::post(exec, hpx::bind(&local_file::close_work, this));
                 }
@@ -118,9 +94,6 @@ namespace hpx::io::server
                 {
                     int result;
                     {
-                        //                    hpx::parallel::execution::io_pool_executor scheduler;
-                        //                    scheduler.add(hpx::util::bind(&local_file::remove_file_work,
-                        //                                                  this, boost::ref(file_name), boost::ref(result)));
                         hpx::parallel::execution::io_pool_executor exec;
                         hpx::parallel::execution::post(exec, hpx::bind(&local_file::remove_file_work, this, file_name, std::ref(result)));
                     }
@@ -136,9 +109,6 @@ namespace hpx::io::server
                 {
                     std::vector<char> result;
                     {
-                        //                    hpx::parallel::execution::io_pool_executor scheduler;
-                        //                    scheduler.add(hpx::util::bind(&local_file::read_work,
-                        //                                                  this, count, boost::ref(result)));
                         hpx::parallel::execution::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::read_work, this, count, std::ref(result))).get();
                     }
@@ -167,9 +137,6 @@ namespace hpx::io::server
                 {
                     std::vector<char> result;
                     {
-                        //                    hpx::parallel::execution::io_pool_executor scheduler;
-                        //                    scheduler.add(hpx::util::bind(&local_file::pread_work,
-                        //                                                  this, count, offset, boost::ref(result)));
                         hpx::parallel::execution::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::pread_work, this, count, offset, std::ref(result))).get();
                     }
@@ -204,9 +171,6 @@ namespace hpx::io::server
                 {
                     ssize_t result = 0;
                     {
-                        //            hpx::parallel::execution::io_pool_executor scheduler;
-                        //            scheduler.add(hpx::util::bind(&local_file::write_work,
-                        //                                this, boost::ref(buf), boost::ref(result)))
                         hpx::parallel::execution::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::write_work, this, buf, std::ref(result))).get();
                     }
@@ -232,9 +196,6 @@ namespace hpx::io::server
                 {
                     ssize_t result = 0;
                     {
-                        // hpx::parallel::execution::io_pool_executor scheduler;
-                        // scheduler.add(hpx::util::bind(&local_file::pwrite_work,
-                        //                     this, boost::ref(buf), offset, boost::ref(result)));
                         hpx::parallel::execution::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::pwrite_work, this, buf, offset, std::ref(result))).get();
                     }
@@ -275,9 +236,6 @@ namespace hpx::io::server
                 {
                     int result;
                     {
-                        //        hpx::parallel::execution::io_pool_executor scheduler;
-                        //        scheduler.add(hpx::util::bind(&local_file::lseek_work,
-                        //                                      this, offset, whence, boost::ref(result)));
                         hpx::parallel::execution::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::lseek_work, this, offset, whence, std::ref(result))).get();
                     }
@@ -296,9 +254,9 @@ namespace hpx::io::server
                 }
 
                 ///////////////////////////////////////////////////////////////////////
-                // Each of the exposed functions needs to be encapsulated into a action
-                // type, allowing to generate all require boilerplate code for threads,
-                // serialization, etc.
+                /// Each of the exposed functions needs to be encapsulated into a action
+                /// type, allowing to generate all require boilerplate code for threads,
+                /// serialization, etc.
                 HPX_DEFINE_COMPONENT_ACTION(local_file, open);
                 HPX_DEFINE_COMPONENT_ACTION(local_file, is_open);
                 HPX_DEFINE_COMPONENT_ACTION(local_file, close);

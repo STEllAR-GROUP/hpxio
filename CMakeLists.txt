@@ -4,9 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 
-## We require at least CMake V2.8.10
-#cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
-
+## We require at least CMake V3.18.0
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 ################################################################################

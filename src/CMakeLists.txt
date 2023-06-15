@@ -23,31 +23,3 @@ else()
     )
 endif()
 
-
-################################################################################
-# OrangeFS
-################################################################################
-find_package(OrangeFS)
-
-if(ORANGEFS_FOUND)
-  # add OrangeFS header files directory
-  include_directories(${ORANGEFS_INCLUDE_DIR})
-
-  if(HPX_DEFAULT_BUILD_TARGETS)
-    add_hpx_component(orangefs_file
-      FOLDER "Core/Components"
-      HEADER_ROOT ${ROOT}
-      SOURCES orangefs_file.cpp
-      DEPENDENCIES ${ORANGEFS_LIBRARY}
-      ESSENTIAL)
-  else()
-    add_hpx_component(orangefs_file
-      FOLDER "Core/Components"
-      HEADER_ROOT ${ROOT}
-      SOURCES orangefs_file.cpp
-      DEPENDENCIES ${ORANGEFS_LIBRARY}
-      )
-  endif()
-
-endif()
-

@@ -6,33 +6,23 @@
 
 #include <hpx/config.hpp>
 #if !defined(HPX_COMPUTE_DEVICE_CODE)
-#include <hpx/hpx.hpp>
 #include <hpx/include/components.hpp>
 #include <hpx/include/serialization.hpp>
 
 #include <hpxio/server/local_file.hpp>
-
-//#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/vector.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Add factory registration functionality
 HPX_REGISTER_COMPONENT_MODULE()
 
 ///////////////////////////////////////////////////////////////////////////////
-//typedef hpx::io::server::local_file local_file_type;
-
-//HPX_REGISTER_MINIMAL_COMPONENT_FACTORY(
-//    hpx::components::managed_component<local_file_type>,
-//    local_file, hpx::components::factory_enabled)
-//HPX_DEFINE_GET_COMPONENT_TYPE(local_file_type)
 
 typedef hpx::components::component<hpx::io::server::local_file> local_file_type;
 
 HPX_REGISTER_COMPONENT(local_file_type, local_file)
 
 ///////////////////////////////////////////////////////////////////////////////
-// Serialization support for the local_file actions
+/// Serialization support for the local_file actions
 HPX_REGISTER_ACTION(
     local_file_type::wrapped_type::open_action,
     local_file_open_action)
