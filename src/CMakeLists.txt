@@ -15,11 +15,21 @@ if(HPX_DEFAULT_BUILD_TARGETS)
     HEADER_ROOT ${ROOT}
     SOURCES local_file.cpp
     ESSENTIAL)
+  add_hpx_component(io_dispatcher
+          FOLDER "Core/Components"
+          HEADER_ROOT ${ROOT}
+          SOURCES io_dispatcher.cpp
+          ESSENTIAL)
 else()
   add_hpx_component(local_file
     FOLDER "Core/Components"
     HEADER_ROOT ${ROOT}
     SOURCES local_file.cpp
     )
+  add_hpx_component(io_dispatcher
+          FOLDER "Core/Components"
+          HEADER_ROOT ${ROOT}
+          SOURCES io_dispatcher.cpp
+          )
 endif()
 
