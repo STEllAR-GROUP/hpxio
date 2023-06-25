@@ -20,24 +20,22 @@ namespace hpx::io {
         {
         }
 
-        config_data(std::string const& datafile_name, std::string const& mode,
+        config_data(std::string const& datafile_name,
             std::string const& symbolic_name, std::size_t num_instances)
           : datafile_name_(datafile_name)
-          , mode_(mode)
           , symbolic_name_(symbolic_name)
           , num_instances_(num_instances)
         {
         }
 
         std::string datafile_name_;    // Data file to load the data from.
-        std::string mode_;              // Mode to open the data file in.
         std::string symbolic_name_;    // Symbolic name this instance is 
                                        // registered with.
         std::size_t num_instances_;    // Number of partition instances.
     };
 }    // namespace sheneos
 
-HPX_DISTRIBUTED_METADATA_DECLARATION(hpx::io::config_data, hpxio_config_data)
+HPX_DISTRIBUTED_METADATA_DECLARATION(hpx::io::config_data, hpx_io_config_data)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Non-intrusive serialization.

@@ -31,11 +31,10 @@ namespace hpx::io {
         std::vector<hpx::io::local_file> partitions_;
         std::size_t num_partitions_;
         std::uintmax_t bytes_per_partition_;
+        std::string mode_;
         bool was_created_;
 
     private:
-        /// Get all partitions given a cursor and length.
-//        std::vector<hpx::io::local_file&> const get_partitions(std::size_t num_bytes) const;
 
         void initialise(std::string const& file_name, std::string const& mode,
                         std::string symbolic_base_name, std::size_t num_instances = std::size_t(-1));
@@ -57,6 +56,8 @@ namespace hpx::io {
 //        void connect(std::string symbolic_name_base = "/hpxio/io_dispatcher");
 
         /// TODO: add all functions for file io
-
+//        std::vector<char> read(std::uintmax_t offset, std::size_t size);
+//
+//        void write(std::uintmax_t offset, std::vector<char> data);
     };
 }

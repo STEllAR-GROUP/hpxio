@@ -5,15 +5,21 @@
 ## file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(example_programs
-	diskperf_hpx_sync_local_file
-	diskperf_hpx_async_local_file
+#	diskperf_hpx_sync_local_file
+#	diskperf_hpx_async_local_file
+		io_dispatcher_test
 		)
-set(diskperf_hpx_sync_local_file_FLAGS DEPENDENCIES
-		PUBLIC local_file_component
-		HPX::hpx HPX::iostreams_component)
+#set(diskperf_hpx_sync_local_file_FLAGS DEPENDENCIES
+#		PUBLIC local_file_component
+#		HPX::hpx HPX::iostreams_component)
 
-set(diskperf_hpx_async_local_file_FLAGS DEPENDENCIES
+#set(diskperf_hpx_async_local_file_FLAGS DEPENDENCIES
+#		PUBLIC local_file_component
+#		HPX::hpx HPX::iostreams_component)
+
+set(io_dispatcher_test_FLAGS DEPENDENCIES
 		PUBLIC local_file_component
+		PUBLIC io_dispatcher_component
 		HPX::hpx HPX::iostreams_component)
 
 foreach(example_program ${example_programs})
