@@ -5,8 +5,8 @@
 #include <hpx/include/lcos_local.hpp>
 #include <hpx/include/runtime.hpp>
 
-#include "io_dispatcher.hpp"
-#include "local_file.hpp"
+#include "../hpxio/io_dispatcher.hpp"
+#include "../hpxio/local_file.hpp"
 
 HPX_REGISTER_COMPONENT_MODULE()
 
@@ -79,15 +79,16 @@ namespace hpx::io {
             // unregister base name
             typedef config_data_type::get_action act;
             config_data data = act()(get_id());
+            std::string sym_name = data.symbolic_name_;
 
-            hpx::agas::unregister_name(hpx::launch::sync, data.symbolic_name_);
+            hpx::agas::unregister_name(hpx::launch::sync, sym_name);
 
-            if (data.symbolic_name_.back() != '/') {
-                data.symbolic_name_.push_back('/');
+            if (sym_name.back() != '/') {
+                sym_name.push_back('/');
             }
 
             for (std::size_t i = 0; i < num_partitions_; ++i) {
-                hpx::agas::unregister_name(hpx::launch::sync, data.symbolic_name_ + std::to_string(i));
+                hpx::agas::unregister_name(hpx::launch::sync, sym_name + std::to_string(i));
             }
         }
     }

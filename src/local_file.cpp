@@ -9,7 +9,7 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/serialization.hpp>
 
-#include "hpxio/server/local_file.hpp"
+#include <hpxio/server/local_file.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Add factory registration functionality
