@@ -13,43 +13,42 @@ HPX_REGISTER_COMPONENT_MODULE()
 namespace hpx::io {
     io_dispatcher::io_dispatcher() : num_partitions_(0),
                                      bytes_per_partition_(0),
+                                     file_size_(0),
                                      was_created_(false) {
-
+        file_name_.clear();
+        mode_.clear();
     }
 
     io_dispatcher::io_dispatcher(hpx::future<hpx::id_type> &&id) :
             base_type(std::move(id)),
             num_partitions_(0),
             bytes_per_partition_(0),
+            file_size_(0),
             was_created_(false) {
-
+        file_name_.clear();
+        mode_.clear();
     }
 
 //     TODO : Can open a file separately. How to handle byte allocation when writing or appending?
-    io_dispatcher::io_dispatcher(std::string const& file_name, std::string const& mode,
-                                 std::string const& symbolic_name_base,
+    io_dispatcher::io_dispatcher(std::string const &symbolic_name_base,
                                  std::size_t num_instances)
             : base_type(hpx::new_<config_data_type>(hpx::find_here(),
-                                                    config_data(file_name, symbolic_name_base, num_instances))),
-              num_partitions_(num_instances){
+                                                    config_data(symbolic_name_base, num_instances))),
+              num_partitions_(num_instances),
+              was_created_(false),
+              file_size_(0) {
         hpx::future<void> f = register_as(symbolic_name_base);
+        file_name_.clear();
+        mode_.clear();
 
-        // TODO: add error handling
         // initialise everything
-        initialise(file_name, mode, symbolic_name_base, num_instances);
+        initialise(symbolic_name_base, num_instances);
 
         f.get();
         was_created_ = true;
     }
 
-    void io_dispatcher::initialise(std::string const& file_name, std::string const& mode,
-                    std::string symbolic_base_name, std::size_t num_instances) {
-
-        //get the file size, need uintmax_t for large files
-        std::uintmax_t file_size = hpx::filesystem::file_size(file_name);
-        this->bytes_per_partition_ = (file_size + num_instances - 1) / num_instances;
-        this->mode_ = mode;
-
+    void io_dispatcher::initialise(std::string symbolic_base_name, std::size_t num_instances) {
         //create the partitions
         std::vector<hpx::id_type> localities = hpx::find_all_localities();
         hpx::future<std::vector<hpx::io::local_file>> result =
@@ -58,23 +57,16 @@ namespace hpx::io {
         // Do I need to get ?
         partitions_ = result.get();
         std::vector<hpx::future<void>> lazy_sync;
-        for (auto partition: partitions_) {
-           lazy_sync.push_back(partition.open(file_name, mode));
-        }
 
         if (symbolic_base_name.back() != '/') {
             symbolic_base_name.push_back('/');
         }
 
         std::size_t counter = 0;
-        for (hpx::io::local_file& partition: partitions_) {
+        for (hpx::io::local_file &partition: partitions_) {
             lazy_sync.push_back(partition.register_as(symbolic_base_name
-            + std::to_string(counter++)));
+                                                      + std::to_string(counter++)));
         }
-
-        FILE* file_ = fopen(file_name.c_str(), mode.c_str());
-        this->pointer = ftell(file_);
-        fclose(file_);
 
         hpx::wait_all(lazy_sync);
     }
@@ -82,9 +74,7 @@ namespace hpx::io {
     io_dispatcher::~io_dispatcher() {
         if (was_created_) {
             // close all  local_file
-            for (auto partition: partitions_) {
-                partition.close().get();
-            }
+            close();
 
             // unregister base name
             typedef config_data_type::get_action act;
@@ -105,6 +95,39 @@ namespace hpx::io {
 
     /// I/O functions
 
+    void io_dispatcher::open(std::string const &file_name, std::string const &mode) {
+        // close already oepn file
+        close();
+
+        //get the file size, need off_t for large files
+        file_size_ = hpx::filesystem::file_size(file_name);
+        this->bytes_per_partition_ = (file_size_ + num_partitions_ - 1) / num_partitions_;
+        this->mode_ = mode;
+
+        std::vector<hpx::future<void>> lazy_open;
+        for (auto partition: partitions_) {
+            lazy_open.push_back(partition.open(file_name, mode));
+        }
+
+        FILE *file_ = fopen(file_name.c_str(), mode.c_str());
+        this->pointer = ftell(file_);
+        fclose(file_);
+
+        hpx::wait_all(lazy_open);
+    }
+
+    void io_dispatcher::close() {
+        if (file_name_.empty()) {
+            return;
+        }
+
+        std::vector<hpx::future<void>> lazy_close;
+        for (auto partition: partitions_) {
+            lazy_close.push_back(partition.close());
+        }
+        hpx::wait_all(lazy_close);
+    }
+
     std::vector<char> io_dispatcher::read(std::size_t size) {
         std::vector<char> result = read_at(pointer, size);
         pointer += size;
@@ -117,28 +140,20 @@ namespace hpx::io {
         return result;
     }
 
-    std::vector<char> io_dispatcher::read_at(std::uintmax_t offset, std::size_t size)
-    {
+    std::vector<char> io_dispatcher::read_at(off_t offset, std::size_t size) {
 //        HPX_ASSERT(this->mode_ == "r" || this->mode_ == "r+" || this->mode_ == "w+" || this->mode_ == "a+");
         int start = offset / bytes_per_partition_;
         int end = (offset + size) / bytes_per_partition_;
         std::vector<hpx::future<std::vector<char>>> lazy_reads;
         std::vector<char> result;
 
-        // TODO : Can ue pread instead of lseek + read
-
-        std::vector<hpx::future<int>> lazy_seek;
-        lazy_seek.push_back(partitions_[start].lseek(offset, SEEK_SET));
-        for (int i = start + 1; i <= end; ++i) {
-            lazy_seek.push_back(partitions_[i].lseek(i * bytes_per_partition_, SEEK_SET));
+        for (int i = start; i <= end; i++) {
+            off_t off_i = std::max(offset, i * bytes_per_partition_);
+            lazy_reads.push_back(partitions_[i].pread(off_i,
+                                                      (i + 1) * bytes_per_partition_ - off_i));
         }
 
-        for (int i = start; i <= end; ++i) {
-            lazy_seek[i - start].get();
-            lazy_reads.push_back(partitions_[i].read((i + 1) * bytes_per_partition_ - std::max(offset, i * bytes_per_partition_)));
-        }
-
-        for (auto& read: lazy_reads) {
+        for (auto &read: lazy_reads) {
             std::vector<char> tmp = read.get();
             result.insert(result.end(), tmp.begin(), tmp.end());
         }
@@ -146,35 +161,43 @@ namespace hpx::io {
         return result;
     }
 
-    hpx::future<std::vector<char> > io_dispatcher::read_at_async(std::uintmax_t offset, std::size_t size) {
+    hpx::future<std::vector<char> > io_dispatcher::read_at_async(off_t offset, std::size_t size) {
         return hpx::async(hpx::bind(&io_dispatcher::read_at, this, offset, size));
     }
 
-    void io_dispatcher::write_at(std::uintmax_t offset, std::vector<char> data) {
-//        HPX_ASSERT(this->mode_ == "w" || this->mode_ == "w+" || this->mode_ == "r+" || this->mode_ == "a+");
-        int start = offset / bytes_per_partition_;
-        int end = (offset + data.size()) / bytes_per_partition_;
-        std::vector<hpx::future<void>> lazy_writes;
+/// TODO : Implement lazy writes. Look into parallel writes?
 
-        // TODO : Can ue pwrite instead of lseek + write
-
-        std::vector<hpx::future<int>> lazy_seek;
-        lazy_seek.push_back(partitions_[start].lseek(offset, SEEK_SET));
-        for (int i = start + 1; i <= end; ++i) {
-            lazy_seek.push_back(partitions_[i].lseek(i * bytes_per_partition_, SEEK_SET));
-        }
-
-//        Do writes need to be synchronous?
-        for (int i = start; i <= end; ++i) {
-            lazy_seek[i - start].get();
-            std::vector<char> tmp(data.begin() + std::max(offset, i * bytes_per_partition_), data.begin() + std::min((i + 1) * bytes_per_partition_, offset + data.size()));
-            lazy_writes.push_back(partitions_[i].write(tmp));
-        }
-
-        hpx::wait_all(lazy_writes);
+    ssize_t io_dispatcher::write(std::vector<char> data) {
+        ssize_t result = write_at_async(pointer, data).get();
+        pointer += result;
+        return result;
     }
 
-    hpx::future<void> io_dispatcher::write_at_async(std::uintmax_t offset, std::vector<char> data) {
-        return hpx::async(hpx::bind(&io_dispatcher::write_at, this, offset, data));
+    hpx::future<ssize_t> io_dispatcher::write_async(std::vector<char> data) {
+        return hpx::async(hpx::bind(&io_dispatcher::write, this, data));
+    }
+
+    ssize_t io_dispatcher::write_at(off_t offset, std::vector<char> data) {
+        return write_at_async(offset, data).get();
+    }
+
+    hpx::future<ssize_t> io_dispatcher::write_at_async(off_t offset, std::vector<char> data) {
+        return partitions_[0].pwrite(data, offset);
+    }
+
+    void io_dispatcher::seek(off_t offset, int whence) {
+        switch (whence) {
+            case SEEK_SET:
+                pointer = offset;
+                break;
+            case SEEK_CUR:
+                pointer += offset;
+                break;
+            case SEEK_END:
+                pointer = file_size_ + offset;
+                break;
+            default:
+                throw std::runtime_error("Invalid whence argument");
+        }
     }
 }

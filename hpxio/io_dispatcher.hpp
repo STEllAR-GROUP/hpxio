@@ -30,26 +30,25 @@ namespace hpx::io {
     private:
         std::vector<hpx::io::local_file> partitions_;
         std::size_t num_partitions_;
-        std::uintmax_t bytes_per_partition_;
-        std::string mode_;
+        off_t file_size_;
+        off_t bytes_per_partition_;
+        std::string file_name_, mode_;
         bool was_created_;
 //       TODO :  how to initialise pointer? Will be based on file open mode.
         off_t pointer;
 
     private:
 
-        void initialise(std::string const& file_name, std::string const& mode,
-                        std::string symbolic_base_name, std::size_t num_instances = std::size_t(-1));
+        void initialise(std::string symbolic_base_name, std::size_t num_instances = std::size_t(-1));
 
     public:
         /// constructors
         io_dispatcher();
 
-        io_dispatcher(std::string const& file_name, std::string const& mode,
-                std::string const& symbolic_name_base = "/hpxio/io_dispatcher",
-                std::size_t num_instances = std::size_t(-1));
+        explicit io_dispatcher(std::string const &symbolic_name_base = "/hpxio/io_dispatcher",
+                               std::size_t num_instances = std::size_t(-1));
 
-        explicit io_dispatcher(hpx::future<hpx::id_type>&& id);
+        explicit io_dispatcher(hpx::future<hpx::id_type> &&id);
 
         /// destructor
         ~io_dispatcher();
@@ -58,18 +57,26 @@ namespace hpx::io {
 //        void connect(std::string symbolic_name_base = "/hpxio/io_dispatcher");
 
         /// TODO: add all functions for file io
+        void open(std::string const &file_name, std::string const &mode);
+
+        void close();
+
         std::vector<char> read(std::size_t size);
 
         hpx::future<std::vector<char> > read_async(std::size_t size);
 
-        std::vector<char> read_at(std::uintmax_t offset, std::size_t size);
+        std::vector<char> read_at(off_t offset, std::size_t size);
 
-        hpx::future<std::vector<char> > read_at_async(std::uintmax_t offset, std::size_t size);
+        hpx::future<std::vector<char> > read_at_async(off_t offset, std::size_t size);
 
-        void write_at(std::uintmax_t offset, std::vector<char> data);
+        ssize_t write(std::vector<char> data);
 
-        hpx::future<void> write_at_async(std::uintmax_t offset, std::vector<char> data);
+        hpx::future<ssize_t> write_async(std::vector<char> data);
 
+        ssize_t write_at(off_t offset, std::vector<char> data);
 
+        hpx::future<ssize_t> write_at_async(off_t offset, std::vector<char> data);
+
+        void seek(off_t offset, int whence);
     };
 }

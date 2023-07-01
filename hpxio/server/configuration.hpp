@@ -20,15 +20,13 @@ namespace hpx::io {
         {
         }
 
-        config_data(std::string const& datafile_name,
-            std::string const& symbolic_name, std::size_t num_instances)
-          : datafile_name_(datafile_name)
-          , symbolic_name_(symbolic_name)
+        config_data(std::string const& symbolic_name,
+                    std::size_t num_instances)
+          : symbolic_name_(symbolic_name)
           , num_instances_(num_instances)
         {
         }
 
-        std::string datafile_name_;    // Data file to load the data from.
         std::string symbolic_name_;    // Symbolic name this instance is 
                                        // registered with.
         std::size_t num_instances_;    // Number of partition instances.
