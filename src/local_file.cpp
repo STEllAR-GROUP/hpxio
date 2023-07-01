@@ -19,8 +19,6 @@ HPX_REGISTER_COMPONENT_MODULE()
 
 typedef hpx::components::component<hpx::io::server::local_file> local_file_type;
 
-HPX_REGISTER_COMPONENT(local_file_type, local_file)
-
 ///////////////////////////////////////////////////////////////////////////////
 /// Serialization support for the local_file actions
 HPX_REGISTER_ACTION(
@@ -50,5 +48,22 @@ HPX_REGISTER_ACTION(
 HPX_REGISTER_ACTION(
     local_file_type::wrapped_type::lseek_action,
     local_file_lseek_action)
+
+HPX_REGISTER_COMPONENT(local_file_type, local_file)
+
+/// I dont know what this does.
+HPX_REGISTER_ACTION(hpx::lcos::base_lco_with_value<
+                            std::vector<std::vector<double>>>::set_value_action,
+                    set_value_action_vector_vector_double)
+HPX_DEFINE_GET_COMPONENT_TYPE_STATIC(
+        hpx::lcos::base_lco_with_value<std::vector<std::vector<double>>>,
+        hpx::components::component_base_lco_with_value);
+
+HPX_REGISTER_ACTION(
+        hpx::lcos::base_lco_with_value<std::vector<double>>::set_value_action,
+        set_value_action_vector_double)
+HPX_DEFINE_GET_COMPONENT_TYPE_STATIC(
+        hpx::lcos::base_lco_with_value<std::vector<double>>,
+        hpx::components::component_base_lco_with_value);
 
 #endif

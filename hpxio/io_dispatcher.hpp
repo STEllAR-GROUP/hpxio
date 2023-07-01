@@ -33,6 +33,8 @@ namespace hpx::io {
         std::uintmax_t bytes_per_partition_;
         std::string mode_;
         bool was_created_;
+//       TODO :  how to initialise pointer? Will be based on file open mode.
+        off_t pointer;
 
     private:
 
@@ -56,8 +58,18 @@ namespace hpx::io {
 //        void connect(std::string symbolic_name_base = "/hpxio/io_dispatcher");
 
         /// TODO: add all functions for file io
-//        std::vector<char> read(std::uintmax_t offset, std::size_t size);
-//
-//        void write(std::uintmax_t offset, std::vector<char> data);
+        std::vector<char> read(std::size_t size);
+
+        hpx::future<std::vector<char> > read_async(std::size_t size);
+
+        std::vector<char> read_at(std::uintmax_t offset, std::size_t size);
+
+        hpx::future<std::vector<char> > read_at_async(std::uintmax_t offset, std::size_t size);
+
+        void write_at(std::uintmax_t offset, std::vector<char> data);
+
+        hpx::future<void> write_at_async(std::uintmax_t offset, std::vector<char> data);
+
+
     };
 }

@@ -23,8 +23,21 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
     // create io_dispatcher instance
-    hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", 1);
+    hpx::io::io_dispatcher *comp = new hpx::io::io_dispatcher(path, "r", "/hpxio/io_dispatcher", 2);
     hpx::cout << "io_dispatcher created" << std::endl;
+
+    std::vector<char> read = comp->read_at(0, 10);
+    std::vector<char> read_async = comp->read_at_async(0, 10).get();
+
+    hpx::cout << "read:" << std::endl;
+    for (auto c : read)
+        hpx::cout << c;
+    hpx::cout << std::endl;
+
+    hpx::cout << "read asyc:" << std::endl;
+    for (auto c : read_async)
+        hpx::cout << c;
+    hpx::cout << std::endl;
 
     return hpx::finalize();
 }

@@ -4,9 +4,10 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(HPX_COMPONENTS_IO_LOCAL_FILE_HPP_AUG_26_2014_1102AM)
-#define HPX_COMPONENTS_IO_LOCAL_FILE_HPP_AUG_26_2014_1102AM
+#pragma once
 
+#include <hpx/config.hpp>
+#if !defined(HPX_COMPUTE_DEVICE_CODE)
 #include <hpx/include/components.hpp>
 #include <hpxio/server/local_file.hpp>
 
@@ -146,4 +147,3 @@ public hpx::components::client_base<local_file, server::local_file>
 } // hpx::io
 
 #endif
-

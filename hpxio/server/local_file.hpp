@@ -297,5 +297,15 @@ HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::pwrite_action,
 HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::lseek_action,
                                 local_file_lseek_action)
 
+HPX_REGISTER_ACTION_DECLARATION(
+        hpx::lcos::base_lco_with_value<
+        std::vector<std::vector<double>>>::set_value_action,
+        set_value_action_vector_vector_double)
+
+HPX_REGISTER_ACTION_DECLARATION(
+        hpx::lcos::base_lco_with_value<
+        std::vector<double>>::set_value_action,
+        set_value_action_vector_double)
+
 #endif
 #endif
