@@ -180,11 +180,7 @@ namespace hpx::io::server
                 void write_work(std::vector<char> const &buf,
                                 ssize_t &result)
                 {
-                    if (fp_ == NULL || buf.
-
-                                       empty()
-
-                    )
+                    if (fp_ == NULL || buf.empty())
                     {
                         return;
                     }
@@ -205,10 +201,7 @@ namespace hpx::io::server
                 void pwrite_work(std::vector<char> const &buf,
                                  off_t const offset, ssize_t &result)
                 {
-                    if (fp_ == NULL || buf.
-
-                                       empty()
-
+                    if (fp_ == NULL || buf.empty()
                         || offset < 0)
                     {
                         return;
