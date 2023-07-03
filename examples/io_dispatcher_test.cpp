@@ -21,11 +21,17 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // extract command line argument
     std::string path = vm["path"].as<std::string>();
 
+    hpx::cout << "Num,ber of localities: " << hpx::get_num_localities().get() << std::endl;
+
     hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
     // create io_dispatcher instance
-    hpx::io::io_dispatcher *comp = new hpx::io::io_dispatcher(path, "r", "/hpxio/io_dispatcher", 2);
+    hpx::io::io_dispatcher *comp = new hpx::io::io_dispatcher("/hpxio/io_dispatcher", 2);
     hpx::cout << "io_dispatcher created" << std::endl;
+    hpx::cout << "trying to open file" << std::endl;
+    // open file
+    comp->open(path, "r");
 
+    hpx::cout << "file opened" << std::endl;
     std::vector<char> read = comp->read_at(0, 10);
     std::vector<char> read_async = comp->read_at_async(0, 10).get();
 
