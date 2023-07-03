@@ -99,21 +99,21 @@ namespace hpx::io {
         // close already oepn file
         close();
 
-        //get the file size, need off_t for large files
-        file_size_ = hpx::filesystem::file_size(file_name);
-        this->bytes_per_partition_ = (file_size_ + num_partitions_ - 1) / num_partitions_;
-        this->mode_ = mode;
-
         std::vector<hpx::future<void>> lazy_open;
         for (auto partition: partitions_) {
             lazy_open.push_back(partition.open(file_name, mode));
         }
 
+        hpx::wait_all(lazy_open);
+
         FILE *file_ = fopen(file_name.c_str(), mode.c_str());
         this->pointer = ftell(file_);
         fclose(file_);
 
-        hpx::wait_all(lazy_open);
+        //get the file size, need off_t for large files
+        file_size_ = hpx::filesystem::file_size(file_name);
+        this->bytes_per_partition_ = (file_size_ + num_partitions_ - 1) / num_partitions_;
+        this->mode_ = mode;
     }
 
     void io_dispatcher::close() {
@@ -143,14 +143,18 @@ namespace hpx::io {
     std::vector<char> io_dispatcher::read_at(off_t offset, std::size_t size) {
 //        HPX_ASSERT(this->mode_ == "r" || this->mode_ == "r+" || this->mode_ == "w+" || this->mode_ == "a+");
         int start = offset / bytes_per_partition_;
-        int end = (offset + size) / bytes_per_partition_;
+        int end;
+        if (bytes_per_partition_)
+            end = std::min(static_cast<size_t>((offset + size) / bytes_per_partition_), num_partitions_ - 1);
+        else {
+            return partitions_[0].pread(size, offset).get();
+        }
         std::vector<hpx::future<std::vector<char>>> lazy_reads;
         std::vector<char> result;
 
         for (int i = start; i <= end; i++) {
             off_t off_i = std::max(offset, i * bytes_per_partition_);
-            lazy_reads.push_back(partitions_[i].pread(off_i,
-                                                      (i + 1) * bytes_per_partition_ - off_i));
+            lazy_reads.push_back(partitions_[i].pread((i + 1) * bytes_per_partition_ - off_i, off_i));
         }
 
         for (auto &read: lazy_reads) {

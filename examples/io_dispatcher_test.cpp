@@ -32,8 +32,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     comp->open(path, "r");
 
     hpx::cout << "file opened" << std::endl;
-    std::vector<char> read = comp->read_at(0, 10);
-    std::vector<char> read_async = comp->read_at_async(0, 10).get();
+    std::vector<char> read = comp->read_at(0, 10000);
+    std::vector<char> read_async = comp->read_at_async(0, 100000).get();
 
     hpx::cout << "read:" << std::endl;
     for (auto c : read)
@@ -44,6 +44,37 @@ int hpx_main(hpx::program_options::variables_map& vm)
     for (auto c : read_async)
         hpx::cout << c;
     hpx::cout << std::endl;
+
+    // close file
+    comp->close();
+
+    // writing test
+    hpx::cout << "trying to open file for writing" << std::endl;
+    comp->open("./test.out", "w");
+
+    hpx::cout << "file opened" << std::endl;
+    std::vector<char> data;
+
+    for (int i = 0; i < 100; ++i) {
+        data.push_back('a' + (rand()%26));
+    }
+
+    comp->write_at_async(10, data).get();
+
+    hpx::cout << "file written: ";
+    for (auto c : data)
+        hpx::cout << c;
+    hpx::cout << std::endl;
+
+    comp->close();
+    comp->open("./test.out", "r");
+    data = comp->read_at(0, 100); // Giving FPE
+    hpx::cout << "data read: ";
+    for (auto c : data)
+        hpx::cout << c;
+    hpx::cout << std::endl;
+
+    comp->close();
 
     return hpx::finalize();
 }
