@@ -78,5 +78,7 @@ namespace hpx::io {
         hpx::future<ssize_t> write_at_async(off_t offset, std::vector<char> data);
 
         void seek(off_t offset, int whence);
+
+        off_t tell();
     };
 }

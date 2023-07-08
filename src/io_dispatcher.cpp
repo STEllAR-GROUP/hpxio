@@ -106,11 +106,10 @@ namespace hpx::io {
 
         hpx::wait_all(lazy_open);
 
-        FILE *file_ = fopen(file_name.c_str(), mode.c_str());
-        this->pointer = ftell(file_);
-        fclose(file_);
+        this->pointer = partitions_[0].tell().get();
 
         //get the file size, need off_t for large files
+        this->file_name_ = file_name;
         file_size_ = hpx::filesystem::file_size(file_name);
         this->bytes_per_partition_ = (file_size_ + num_partitions_ - 1) / num_partitions_;
         this->mode_ = mode;
@@ -125,7 +124,10 @@ namespace hpx::io {
         for (auto partition: partitions_) {
             lazy_close.push_back(partition.close());
         }
+
         hpx::wait_all(lazy_close);
+        file_name_.clear();
+        mode_.clear();
     }
 
     std::vector<char> io_dispatcher::read(std::size_t size) {
@@ -203,5 +205,9 @@ namespace hpx::io {
             default:
                 throw std::runtime_error("Invalid whence argument");
         }
+    }
+
+    off_t io_dispatcher::tell() {
+        return pointer;
     }
 }

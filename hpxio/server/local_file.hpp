@@ -246,6 +246,27 @@ namespace hpx::io::server
                     result = fseek(fp_, offset, whence);
                 }
 
+                off_t tell()
+                {
+                    off_t result;
+                    {
+                        hpx::parallel::execution::io_pool_executor exec;
+                        hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::tell_work, this, std::ref(result))).get();
+                    }
+                    return result;
+                }
+
+                void tell_work(off_t &result)
+                {
+                    if (fp_ == NULL)
+                    {
+                        result = -1;
+                        return;
+                    }
+
+                    result = ftell(fp_);
+                }
+
                 ///////////////////////////////////////////////////////////////////////
                 /// Each of the exposed functions needs to be encapsulated into a action
                 /// type, allowing to generate all require boilerplate code for threads,
@@ -259,6 +280,7 @@ namespace hpx::io::server
                 HPX_DEFINE_COMPONENT_ACTION(local_file, write);
                 HPX_DEFINE_COMPONENT_ACTION(local_file, pwrite);
                 HPX_DEFINE_COMPONENT_ACTION(local_file, lseek);
+                HPX_DEFINE_COMPONENT_ACTION(local_file, tell);
 
             private:
                 typedef hpx::components::managed_component_base<local_file> base_type;
@@ -289,6 +311,8 @@ HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::pwrite_action,
                                 local_file_pwrite_action)
 HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::lseek_action,
                                 local_file_lseek_action)
+HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::tell_action,
+                                local_file_tell_action)
 
 HPX_REGISTER_ACTION_DECLARATION(
         hpx::lcos::base_lco_with_value<

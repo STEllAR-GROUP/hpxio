@@ -142,6 +142,17 @@ public hpx::components::client_base<local_file, server::local_file>
             return lseek(offset, whence).get();
         }
 
+        hpx::future<off_t> tell()
+        {
+            typedef server::local_file::tell_action action_type;
+            return hpx::async<action_type>(this->get_id());
+        }
+
+        off_t tell_sync()
+        {
+            return tell().get();
+        }
+
     };
 
 } // hpx::io
