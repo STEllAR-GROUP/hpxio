@@ -37,14 +37,13 @@ namespace hpx::io {
               num_partitions_(num_instances),
               was_created_(false),
               file_size_(0) {
-        hpx::future<void> f = register_as(symbolic_name_base);
+        register_as(symbolic_name_base).get();
         file_name_.clear();
         mode_.clear();
 
         // initialise everything
         initialise(symbolic_name_base, num_instances);
 
-        f.get();
         was_created_ = true;
     }
 
@@ -73,9 +72,6 @@ namespace hpx::io {
 
     io_dispatcher::~io_dispatcher() {
         if (was_created_) {
-            // close all  local_file
-            close();
-
             // unregister base name
             typedef config_data_type::get_action act;
             config_data data = act()(get_id());
@@ -83,9 +79,9 @@ namespace hpx::io {
 
             hpx::agas::unregister_name(hpx::launch::sync, sym_name);
 
-            if (sym_name.back() != '/') {
-                sym_name.push_back('/');
-            }
+//            if (sym_name.back() != '/') {
+//                sym_name.push_back('/');
+//            }
 
             for (std::size_t i = 0; i < num_partitions_; ++i) {
                 hpx::agas::unregister_name(hpx::launch::sync, sym_name + std::to_string(i));
