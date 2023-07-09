@@ -45,7 +45,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
         hpx::cout << c;
     hpx::cout << std::endl;
 
-    close file
+    // close file
     comp.close();
 
     // writing test
