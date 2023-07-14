@@ -79,9 +79,9 @@ namespace hpx::io {
 
             hpx::agas::unregister_name(hpx::launch::sync, sym_name);
 
-//            if (sym_name.back() != '/') {
-//                sym_name.push_back('/');
-//            }
+            if (sym_name.back() != '/') {
+               sym_name.push_back('/');
+            }
 
             for (std::size_t i = 0; i < num_partitions_; ++i) {
                 hpx::agas::unregister_name(hpx::launch::sync, sym_name + std::to_string(i));
