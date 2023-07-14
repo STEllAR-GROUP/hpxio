@@ -30,8 +30,8 @@ namespace hpx::io {
     }
 
 //     TODO : Can open a file separately. How to handle byte allocation when writing or appending?
-    io_dispatcher::io_dispatcher(std::string const &symbolic_name_base,
-                                 std::size_t num_instances)
+    io_dispatcher::io_dispatcher(std::string const &file_name, std::string const &mode,
+            std::string const& symbolic_name_base, std::size_t num_instances)
             : base_type(hpx::new_<config_data_type>(hpx::find_here(),
                                                     config_data(symbolic_name_base, num_instances))),
               num_partitions_(num_instances),
@@ -44,6 +44,21 @@ namespace hpx::io {
         // initialise everything
         initialise(symbolic_name_base, num_instances);
 
+        // open the file and set the mode on all partitions
+        std::vector<hpx::future<void>> lazy_open;
+        for (auto partition: partitions_) {
+            lazy_open.push_back(partition.open(file_name, mode));
+        }
+
+        //get the file size, need off_t for large files
+        this->file_name_ = file_name;
+        file_size_ = hpx::filesystem::file_size(file_name);
+        this->bytes_per_partition_ = (file_size_ + num_partitions_ - 1) / num_partitions_;
+        this->mode_ = mode;
+
+        hpx::wait_all(lazy_open);
+
+        this->pointer = partitions_[0].tell().get();
         was_created_ = true;
     }
 
@@ -57,8 +72,8 @@ namespace hpx::io {
         partitions_ = result.get();
         std::vector<hpx::future<void>> lazy_sync;
 
-        if (symbolic_base_name.back() != '/') {
-            symbolic_base_name.push_back('/');
+        if (symbolic_base_name[symbolic_base_name.size() - 1] != '/') {
+            symbolic_base_name += '/';
         }
 
         std::size_t counter = 0;
@@ -75,16 +90,15 @@ namespace hpx::io {
             // unregister base name
             typedef config_data_type::get_action act;
             config_data data = act()(get_id());
-            std::string sym_name = data.symbolic_name_;
 
-            hpx::agas::unregister_name(hpx::launch::sync, sym_name);
+            hpx::agas::unregister_name(hpx::launch::sync, data.symbolic_name_);
 
-            if (sym_name.back() != '/') {
-               sym_name.push_back('/');
+            if (data.symbolic_name_[data.symbolic_name_.size() - 1] != '/') {
+               data.symbolic_name_ += '/';
             }
 
-            for (std::size_t i = 0; i < num_partitions_; ++i) {
-                hpx::agas::unregister_name(hpx::launch::sync, sym_name + std::to_string(i));
+            for (std::size_t i = 1; i <= num_partitions_; ++i) {
+                hpx::agas::unregister_name(hpx::launch::sync, data.symbolic_name_ + std::to_string(i));
             }
         }
     }
@@ -110,7 +124,7 @@ namespace hpx::io {
         this->bytes_per_partition_ = (file_size_ + num_partitions_ - 1) / num_partitions_;
         this->mode_ = mode;
     }
-
+    /// TODO : Remove open and close functions. They are not needed.
     void io_dispatcher::close() {
         if (file_name_.empty()) {
             return;

@@ -20,62 +20,51 @@ int hpx_main(hpx::program_options::variables_map& vm)
 {
     // extract command line argument
     std::string path = vm["path"].as<std::string>();
+    size_t num_instances = vm["n"].as<size_t>();
 
     hpx::cout << "Number of localities: " << hpx::get_num_localities().get() << std::endl;
 
-    hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
-    // create io_dispatcher instance
-    hpx::io::io_dispatcher comp("/hpxio/io_dispatcher", 3);
-    hpx::cout << "io_dispatcher created" << std::endl;
-    hpx::cout << "trying to open file" << std::endl;
-    // open file
-    comp.open(path, "r");
+//    {
+//        hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
+//        // create io_dispatcher instance
+//        hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances);
+//        hpx::cout << "io_dispatcher created" << std::endl;
+//
+//        std::vector<char> read = comp.read_at(0, 10000);
+//        std::vector<char> read_async = comp.read_at_async(0, 100000).get();
+//
+//        hpx::cout << "read:" << std::endl;
+//        for (auto c: read)
+//            hpx::cout << c;
+//        hpx::cout << std::endl;
+//
+//        hpx::cout << "read async:" << std::endl;
+//        for (auto c: read_async)
+//            hpx::cout << c;
+//        hpx::cout << std::endl;
+//    }
 
-    hpx::cout << "file opened" << std::endl;
-    std::vector<char> read = comp.read_at(0, 10000);
-    std::vector<char> read_async = comp.read_at_async(0, 100000).get();
+//     writing test
+    {
+        hpx::cout << "trying to create write io_dispatcher:" << path << std::endl;
+        hpx::io::io_dispatcher comp_write("./test.out", "a", "/hpxio/io_dispatcher", num_instances);
 
-    hpx::cout << "read:" << std::endl;
-    for (auto c : read)
-        hpx::cout << c;
-    hpx::cout << std::endl;
 
-    hpx::cout << "read asyc:" << std::endl;
-    for (auto c : read_async)
-        hpx::cout << c;
-    hpx::cout << std::endl;
+        hpx::cout << "writing into file \"test.out\"" << std::endl;
+        std::vector<char> data;
 
-    // close file
-    comp.close();
+        srand(time(NULL));
+        for (int i = 0; i < 100; ++i) {
+            data.push_back('a' + (rand() % 26));
+        }
 
-    // writing test
-    hpx::cout << "trying to open file for writing" << std::endl;
-    comp.open("./test.out", "w");
+        comp_write.write_at_async(0, data).get();
 
-    hpx::cout << "file opened" << std::endl;
-    std::vector<char> data;
-
-    for (int i = 0; i < 100; ++i) {
-        data.push_back('a' + (rand()%26));
+        hpx::cout << "file written: ";
+        for (auto c: data)
+            hpx::cout << c;
+        hpx::cout << std::endl;
     }
-
-    comp.write_at_async(0, data).get();
-
-    hpx::cout << "file written: ";
-    for (auto c : data)
-        hpx::cout << c;
-    hpx::cout << std::endl;
-
-    comp.close();
-
-    comp.open("./test.out", "r");
-    std::vector<char> readData = comp.read_at(0, 100); // Giving FPE
-    hpx::cout << "data read: ";
-    for (auto c : readData)
-        hpx::cout << c;
-    hpx::cout << std::endl;
-
-    comp.close();
 
     hpx::cout << "test finished" << std::endl;
     return hpx::finalize();
@@ -91,6 +80,8 @@ int main(int argc, char* argv[])
     desc_commandline.add_options()
             ( "path" , hpx::program_options::value<std::string>()->default_value(std::string("/home/arnav/project/gsoc/test_files/new.txt")),
               "file path to place the testing files.")
+            ( "n", hpx::program_options::value<std::size_t>()->default_value(1),
+              "number of local_file instances to create.")
             ;
     hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;

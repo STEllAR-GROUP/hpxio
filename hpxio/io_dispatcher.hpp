@@ -45,8 +45,9 @@ namespace hpx::io {
         /// constructors
         io_dispatcher();
 
-        explicit io_dispatcher(std::string const &symbolic_name_base = "/hpxio/io_dispatcher",
-                               std::size_t num_instances = std::size_t(-1));
+        io_dispatcher(std::string const &file_name, std::string const &mode,
+                               std::string const& symbolic_name_base = "/hpxio/io_dispatcher",
+                               std::size_t num_instances = std::size_t(1));
 
         explicit io_dispatcher(hpx::future<hpx::id_type> &&id);
 
