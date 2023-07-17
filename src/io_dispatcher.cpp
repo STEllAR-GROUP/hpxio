@@ -86,6 +86,7 @@ namespace hpx::io {
     }
 
     io_dispatcher::~io_dispatcher() {
+        hpx::future<void> f = partitions_[0].close();
         if (was_created_) {
             // unregister base name
             typedef config_data_type::get_action act;
@@ -101,6 +102,7 @@ namespace hpx::io {
                 hpx::agas::unregister_name(hpx::launch::sync, data.symbolic_name_ + std::to_string(i));
             }
         }
+        f.get();
     }
 
     /// I/O functions

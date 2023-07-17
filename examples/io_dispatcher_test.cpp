@@ -24,30 +24,31 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     hpx::cout << "Number of localities: " << hpx::get_num_localities().get() << std::endl;
 
-//    {
-//        hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
-//        // create io_dispatcher instance
-//        hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances);
-//        hpx::cout << "io_dispatcher created" << std::endl;
-//
-//        std::vector<char> read = comp.read_at(0, 10000);
-//        std::vector<char> read_async = comp.read_at_async(0, 100000).get();
-//
-//        hpx::cout << "read:" << std::endl;
-//        for (auto c: read)
-//            hpx::cout << c;
-//        hpx::cout << std::endl;
-//
-//        hpx::cout << "read async:" << std::endl;
-//        for (auto c: read_async)
-//            hpx::cout << c;
-//        hpx::cout << std::endl;
-//    }
+    // reading test
+    {
+        hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
+        // create io_dispatcher instance
+        hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances);
+        hpx::cout << "io_dispatcher created" << std::endl;
 
-//     writing test
+        std::vector<char> read = comp.read_at(0, 10000);
+        std::vector<char> read_async = comp.read_at_async(0, 100000).get();
+
+        hpx::cout << "read:" << std::endl;
+        for (auto c: read)
+            hpx::cout << c;
+        hpx::cout << std::endl;
+
+        hpx::cout << "read async:" << std::endl;
+        for (auto c: read_async)
+            hpx::cout << c;
+        hpx::cout << std::endl;
+    }
+
+    // writing test
     {
         hpx::cout << "trying to create write io_dispatcher:" << path << std::endl;
-        hpx::io::io_dispatcher comp_write("./test.out", "a", "/hpxio/io_dispatcher", num_instances);
+        hpx::io::io_dispatcher comp_write("./test.out", "w", "/hpxio/io_dispatcher", num_instances);
 
 
         hpx::cout << "writing into file \"test.out\"" << std::endl;
