@@ -50,7 +50,7 @@ namespace hpx::io::server
 
                     local_file()
                 {
-                    close();
+//                    close();
                 }
 
                 void open(std::string const &name, std::string const &mode)
