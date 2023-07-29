@@ -144,7 +144,7 @@ namespace hpx::io {
     }
 
     std::vector<char> io_dispatcher::read_at(off_t offset, std::size_t size) const {
-        return hpx::async(hpx::bind(&io_dispatcher::read_at_work, this, offset, size)).get();
+        return read_at_async(offset, size).get();
     }
 
     hpx::future<std::vector<char> > io_dispatcher::read_at_async(off_t offset, std::size_t size) {
