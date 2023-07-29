@@ -60,8 +60,9 @@ namespace hpx::io {
 
         hpx::future<std::vector<char> > read_async(std::size_t size);
 
-        std::vector<char> read_at(off_t offset, std::size_t size);
+        std::vector<char> read_at_work(off_t offset, std::size_t size);
 
+        std::vector<char> read_at(off_t offset, std::size_t size) const;
         hpx::future<std::vector<char> > read_at_async(off_t offset, std::size_t size);
 
         ssize_t write(std::vector<char> data);

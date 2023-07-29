@@ -118,7 +118,7 @@ namespace hpx::io {
         return result;
     }
 
-    std::vector<char> io_dispatcher::read_at(off_t offset, std::size_t size) {
+    std::vector<char> io_dispatcher::read_at_work(off_t offset, std::size_t size) {
 //        HPX_ASSERT(this->mode_ == "r" || this->mode_ == "r+" || this->mode_ == "w+" || this->mode_ == "a+");
         int start = offset / bytes_per_partition_;
         int end;
@@ -143,8 +143,12 @@ namespace hpx::io {
         return result;
     }
 
+    std::vector<char> io_dispatcher::read_at(off_t offset, std::size_t size) const {
+        return hpx::async(hpx::bind(&io_dispatcher::read_at_work, this, offset, size)).get();
+    }
+
     hpx::future<std::vector<char> > io_dispatcher::read_at_async(off_t offset, std::size_t size) {
-        return hpx::async(hpx::bind(&io_dispatcher::read_at, this, offset, size));
+        return hpx::async(hpx::bind(&io_dispatcher::read_at_work, this, offset, size));
     }
 
 /// TODO : Implement lazy writes. Look into parallel writes?
