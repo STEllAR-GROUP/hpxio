@@ -29,7 +29,6 @@ namespace hpx::io {
         mode_.clear();
     }
 
-//     TODO : Can open a file separately. How to handle byte allocation when writing or appending?
     io_dispatcher::io_dispatcher(std::string const &file_name, std::string const &mode,
             std::string const& symbolic_name_base, std::size_t num_instances)
             : base_type(hpx::new_<config_data_type>(hpx::find_here(),
@@ -106,41 +105,6 @@ namespace hpx::io {
     }
 
     /// I/O functions
-
-    void io_dispatcher::open(std::string const &file_name, std::string const &mode) {
-        // close already oepn file
-        close();
-
-        std::vector<hpx::future<void>> lazy_open;
-        for (auto partition: partitions_) {
-            lazy_open.push_back(partition.open(file_name, mode));
-        }
-
-        hpx::wait_all(lazy_open);
-
-        this->pointer = partitions_[0].tell().get();
-
-        //get the file size, need off_t for large files
-        this->file_name_ = file_name;
-        file_size_ = hpx::filesystem::file_size(file_name);
-        this->bytes_per_partition_ = (file_size_ + num_partitions_ - 1) / num_partitions_;
-        this->mode_ = mode;
-    }
-    /// TODO : Remove open and close functions. They are not needed.
-    void io_dispatcher::close() {
-        if (file_name_.empty()) {
-            return;
-        }
-
-        std::vector<hpx::future<void>> lazy_close;
-        for (auto partition: partitions_) {
-            lazy_close.push_back(partition.close());
-        }
-
-        hpx::wait_all(lazy_close);
-        file_name_.clear();
-        mode_.clear();
-    }
 
     std::vector<char> io_dispatcher::read(std::size_t size) {
         std::vector<char> result = read_at(pointer, size);

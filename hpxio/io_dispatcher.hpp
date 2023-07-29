@@ -34,7 +34,6 @@ namespace hpx::io {
         off_t bytes_per_partition_;
         std::string file_name_, mode_;
         bool was_created_;
-//       TODO :  how to initialise pointer? Will be based on file open mode.
         off_t pointer;
 
     private:
@@ -56,11 +55,6 @@ namespace hpx::io {
 
         /// Connect to an existing interpolation object with the given symbolic name
 //        void connect(std::string symbolic_name_base = "/hpxio/io_dispatcher");
-
-        /// TODO: add all functions for file io
-        void open(std::string const &file_name, std::string const &mode);
-
-        void close();
 
         std::vector<char> read(std::size_t size);
 
