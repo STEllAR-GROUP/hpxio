@@ -13,7 +13,33 @@
 #include <hpxio/io_dispatcher.hpp>
 #include <hpx/hpx_init.hpp>
 #include <hpx/iostream.hpp>
+#include <chrono>
 
+class Timer {
+private:
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_start_timepoint;
+
+    void stop() const {
+        auto end_point = std::chrono::high_resolution_clock::now();
+
+        auto start = std::chrono::time_point_cast<std::chrono::microseconds>
+                (m_start_timepoint).time_since_epoch().count();
+        auto end = std::chrono::time_point_cast
+                <std::chrono::microseconds>(end_point).time_since_epoch().count();
+
+        auto duration = end - start;
+        hpx::cout << "Took " << duration << " microseconds\n";
+    }
+
+public:
+    Timer() {
+        m_start_timepoint = std::chrono::high_resolution_clock::now();
+    }
+
+    ~Timer() {
+        stop();
+    }
+};
 
 /////////////////////////////////////////////////////////////////////////////
 int hpx_main(hpx::program_options::variables_map& vm)
@@ -28,6 +54,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     {
         hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
         // create io_dispatcher instance
+        Timer timer_read;
         hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances);
         hpx::cout << "io_dispatcher created" << std::endl;
 
@@ -48,6 +75,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // writing test
     {
         hpx::cout << "trying to create write io_dispatcher:" << path << std::endl;
+        Timer timer_write;
         hpx::io::io_dispatcher comp_write("./test.out", "w", "/hpxio/io_dispatcher", num_instances);
 
 
