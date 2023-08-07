@@ -153,6 +153,11 @@ public hpx::components::client_base<local_file, server::local_file>
             return tell().get();
         }
 
+        void flush_write()
+        {
+            typedef server::local_file::lazy_write_flush_action action_type;
+            hpx::async<action_type>(this->get_id()).get();
+        }
     };
 
 } // hpx::io

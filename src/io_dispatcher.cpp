@@ -85,6 +85,7 @@ namespace hpx::io {
     }
 
     io_dispatcher::~io_dispatcher() {
+        partitions_[0].flush_write();
         hpx::future<void> f = partitions_[0].close();
         if (was_created_) {
             // unregister base name
@@ -151,7 +152,6 @@ namespace hpx::io {
         return hpx::async(hpx::bind(&io_dispatcher::read_at_work, this, offset, size));
     }
 
-/// TODO : Implement lazy writes. Look into parallel writes?
 
     ssize_t io_dispatcher::write(std::vector<char> data) {
         ssize_t result = write_at_async(pointer, data).get();

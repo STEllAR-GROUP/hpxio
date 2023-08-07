@@ -51,6 +51,9 @@ HPX_REGISTER_ACTION(
 HPX_REGISTER_ACTION(
     local_file_type::wrapped_type::tell_action,
     local_file_tell_action)
+HPX_REGISTER_ACTION(
+        local_file_type::wrapped_type::lazy_write_flush_action,
+        local_file_lazy_write_flush_action)
 
 HPX_REGISTER_COMPONENT(local_file_type, local_file)
 

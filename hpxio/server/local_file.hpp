@@ -40,7 +40,7 @@ namespace hpx::io::server
 
             {
             public:
-                local_file()
+                local_file() : current_buff_size(0)
                 {
                     fp_ = NULL;
                     file_name_.clear();
@@ -50,7 +50,6 @@ namespace hpx::io::server
 
                     local_file()
                 {
-//                    close();
                 }
 
                 void open(std::string const &name, std::string const &mode)
@@ -167,6 +166,20 @@ namespace hpx::io::server
                     fsetpos(fp_, &pos);
                 }
 
+                ssize_t lazy_write_flush() {
+                    ssize_t result = 0;
+                    {
+                        hpx::parallel::execution::io_pool_executor exec;
+                        for (const auto& write_chunk : lazy_writes) {
+                            auto buf = write_chunk.second;
+                            auto offset = write_chunk.first;
+                            hpx::parallel::execution::sync_execute(exec, hpx::bind(&local_file::pwrite_work, this, buf,
+                                                                                    offset, std::ref(result)));
+                        }
+                    }
+                    return result;
+                }
+
                 ssize_t write(std::vector<char> const &buf)
                 {
                     ssize_t result = 0;
@@ -190,12 +203,20 @@ namespace hpx::io::server
                 ssize_t pwrite(std::vector<char> const &buf,
                                off_t const offset)
                 {
-                    ssize_t result = 0;
-                    {
-                        hpx::parallel::execution::io_pool_executor exec;
-                        hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::pwrite_work, this, buf, offset, std::ref(result))).get();
+                    lazy_writes.emplace_back(offset, buf);
+                    current_buff_size += buf.size();
+                    if (current_buff_size > chunk_size) {
+                            // Flush buffer and write.
+
                     }
-                    return result;
+
+//                    ssize_t result = 0;
+//                    {
+//                        hpx::parallel::execution::io_pool_executor exec;
+//                        hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::pwrite_work, this, buf, offset, std::ref(result))).get();
+//                    }
+//                    return result;
+                    return 0;
                 }
 
                 void pwrite_work(std::vector<char> const &buf,
@@ -281,12 +302,17 @@ namespace hpx::io::server
                 HPX_DEFINE_COMPONENT_ACTION(local_file, pwrite);
                 HPX_DEFINE_COMPONENT_ACTION(local_file, lseek);
                 HPX_DEFINE_COMPONENT_ACTION(local_file, tell);
+                HPX_DEFINE_COMPONENT_ACTION(local_file, lazy_write_flush);
 
             private:
                 typedef hpx::components::managed_component_base<local_file> base_type;
 
                 std::FILE *fp_;
                 std::string file_name_;
+
+                std::vector<std::pair<off_t, std::vector<char>>> lazy_writes;
+                size_t chunk_size = 4 * 1024; // 4 kbs
+                size_t current_buff_size;
             };
 
         } // hpx::io::server
@@ -313,6 +339,9 @@ HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::lseek_action,
                                 local_file_lseek_action)
 HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::tell_action,
                                 local_file_tell_action)
+HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::local_file::lazy_write_flush_action,
+                                local_file_lazy_write_flush_action)
+
 
 HPX_REGISTER_ACTION_DECLARATION(
         hpx::lcos::base_lco_with_value<
