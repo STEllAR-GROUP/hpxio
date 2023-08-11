@@ -40,7 +40,7 @@ namespace hpx::io::server
 
             {
             public:
-                local_file() : current_buff_size(0)
+                local_file() : current_buff_size(0), cache_number(0), valid_cache(false)
                 {
                     fp_ = NULL;
                     file_name_.clear();
@@ -66,6 +66,7 @@ namespace hpx::io::server
                     }
                     fp_ = fopen(name.c_str(), mode.c_str());
                     file_name_ = name;
+                    file_size = hpx::filesystem::file_size(name);
                 }
 
                 bool is_open() const
@@ -122,7 +123,19 @@ namespace hpx::io::server
                     }
 
                     std::unique_ptr<char> sp(new char[count]);
-                    ssize_t len = fread(sp.get(), 1, count, fp_);
+
+                    // Check if we can read from cache.
+                    ssize_t ptr = ftell(fp_);
+                    if (valid_cache && ptr >= cache_number * chunk_size && ptr + count < (cache_number + 1) * chunk_size) {
+                        // Read from cache.
+                        result.assign(cache.begin() + ptr - cache_number * chunk_size, cache.begin() + ptr - cache_number * chunk_size + count);
+                        return;
+                    }
+
+                    // If we cant, read and update cache
+                    ssize_t end = (ptr + count + chunk_size - 1) / chunk_size;
+                    end *= chunk_size;
+                    ssize_t len = fread(sp.get(), 1, end - ptr, fp_);
 
                     if (len == 0)
                     {
@@ -130,6 +143,9 @@ namespace hpx::io::server
                     }
 
                     result.assign(sp.get(), sp.get() + len);
+                    cache_number = (ptr + len) / chunk_size;
+                    ssize_t len_cache = (ptr + len) % chunk_size;
+                    cache.assign(sp.get() + len - len_cache, sp.get() + len);
                 }
 
                 std::vector<char> pread(size_t const count, off_t const offset)
@@ -309,8 +325,12 @@ namespace hpx::io::server
 
                 std::FILE *fp_;
                 std::string file_name_;
+                off_t file_size;
 
                 std::vector<std::pair<off_t, std::vector<char>>> lazy_writes;
+                std::vector<char> cache; // store chunk_size size of data here after a read.
+                size_t cache_number;
+                bool valid_cache;
                 size_t chunk_size = 4 * 1024; // 4 kbs
                 size_t current_buff_size;
             };
