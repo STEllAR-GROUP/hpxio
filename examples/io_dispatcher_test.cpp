@@ -54,8 +54,17 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     size_t file_size = hpx::filesystem::file_size(path);
 
-    hpx::cout << "Number of localities: " << hpx::get_num_localities().get() << std::endl;
-//    std::vector<char> read;
+    // Print all parameters to cout
+    hpx::cout << "path: " << path << std::endl;
+    hpx::cout << "num_instances: " << num_instances << std::endl;
+    hpx::cout << "chunk_size: " << chunk_size << std::endl;
+    hpx::cout << "read_size: " << read_size << std::endl;
+    hpx::cout << "write_size: " << write_size << std::endl;
+    hpx::cout << "n_ops: " << n_ops << std::endl;
+    hpx::cout << "file_size: " << file_size << std::endl;
+
+    hpx::cout << "Number of localities: " << hpx::get_num_localities().get() << std::endl << std::endl;
+
     // reading test
     {
         hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
@@ -64,8 +73,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
         hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances, chunk_size);
         hpx::cout << "io_dispatcher created" << std::endl;
 
-        for (int i = 0; i< n_ops; ++i)
-            comp.read_at(rand()%file_size, read_size);
+        for (int i = 0; i< n_ops; ++i) {
+            comp.read_at_async(rand() % file_size, read_size).get();
+        }
     }
 
     std::vector<char> data;

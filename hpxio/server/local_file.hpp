@@ -117,6 +117,7 @@ namespace hpx::io::server
 
                 void read_work(size_t const count, std::vector<char> &result)
                 {
+                    // TODO : If chunk size larger than file, segfaults.
                     if (fp_ == NULL || count <= 0)
                     {
                         return;
@@ -143,6 +144,7 @@ namespace hpx::io::server
                     }
 
                     result.assign(sp.get(), sp.get() + len);
+                    valid_cache = true;
                     cache_number = (ptr + len) / chunk_size;
                     ssize_t len_cache = (ptr + len) % chunk_size;
                     cache.assign(sp.get() + len - len_cache, sp.get() + len);
@@ -325,14 +327,18 @@ namespace hpx::io::server
 
                 std::FILE *fp_;
                 std::string file_name_;
-                off_t file_size{};
+                off_t file_size{};\
 
+                size_t chunk_size;
+
+                // write optimizations
                 std::vector<std::pair<off_t, std::vector<char>>> lazy_writes;
+                size_t current_buff_size;
+
+                // read optimizations
                 std::vector<char> cache; // store chunk_size size of data here after a read.
                 size_t cache_number;
                 bool valid_cache;
-                size_t chunk_size;
-                size_t current_buff_size;
             };
 
         } // hpx::io::server
