@@ -47,18 +47,25 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // extract command line argument
     std::string path = vm["path"].as<std::string>();
     size_t num_instances = vm["n"].as<size_t>();
+    size_t chunk_size = vm["chunk-size"].as<size_t>();
+    size_t read_size = vm["read-size"].as<size_t>();
+    size_t write_size = vm["write-size"].as<size_t>();
+    size_t n_ops = vm["n-ops"].as<size_t>();
+
+    size_t file_size = hpx::filesystem::file_size(path);
 
     hpx::cout << "Number of localities: " << hpx::get_num_localities().get() << std::endl;
-    std::vector<char> read;
+//    std::vector<char> read;
     // reading test
     {
         hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
         // create io_dispatcher instance
         Timer timer_read;
-        hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances, 16 * 1024);
+        hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances, chunk_size);
         hpx::cout << "io_dispatcher created" << std::endl;
 
-        read = comp.read_at(0, 10000);
+        for (int i = 0; i< n_ops; ++i)
+            comp.read_at(rand()%file_size, read_size);
     }
 
     std::vector<char> data;
@@ -72,16 +79,15 @@ int hpx_main(hpx::program_options::variables_map& vm)
         hpx::cout << "writing into file \"test.out\"" << std::endl;
 
         srand(time(NULL));
-        for (int i = 0; i < 100; ++i) {
-            data.push_back('a' + (rand() % 26));
-        }
+        auto generator = [](){return 'a' + (rand() % 26);};
+        for (int j = 0; j < n_ops; ++j)
+        {
+            data.resize(write_size);
+            hpx::ranges::generate(data, generator);
 
-        comp_write.write_at_async(0, data).get();
+            comp_write.write_at_async(0, data).get();
+        }
     }
-    hpx::cout << "file written: ";
-    for (auto c: data)
-        hpx::cout << c;
-    hpx::cout << std::endl;
 
     hpx::cout << "test finished" << std::endl;
     return hpx::finalize();
@@ -99,6 +105,14 @@ int main(int argc, char* argv[])
               "file path to place the testing files.")
             ( "n", hpx::program_options::value<std::size_t>()->default_value(1),
               "number of local_file instances to create.")
+            ( "chunk-size", hpx::program_options::value<std::size_t>()->default_value(4 * 1024),
+              "chunk size to use for the file operations.")
+            ("read-size", hpx::program_options::value<std::size_t>()->default_value(4 * 1024),
+             "read size to use for the file operations.")
+            ("write-size", hpx::program_options::value<std::size_t>()->default_value(4 * 1024),
+             "write size to use for the file operations.")
+            ("n-ops", hpx::program_options::value<std::size_t>()->default_value(10000),
+             "number of operations to perform.")
             ;
     hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;
