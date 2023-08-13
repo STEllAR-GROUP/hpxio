@@ -30,7 +30,7 @@ namespace hpx::io {
     }
 
     io_dispatcher::io_dispatcher(std::string const &file_name, std::string const &mode,
-            std::string const& symbolic_name_base, std::size_t num_instances)
+            std::string const& symbolic_name_base, std::size_t num_instances, std::size_t chunk_size)
             : base_type(hpx::new_<config_data_type>(hpx::find_here(),
                                                     config_data(symbolic_name_base, num_instances))),
               num_partitions_(num_instances),
@@ -41,7 +41,7 @@ namespace hpx::io {
         mode_.clear();
 
         // initialise everything
-        initialise(symbolic_name_base, num_instances);
+        initialise(symbolic_name_base, chunk_size, num_instances);
 
         // open the file and set the mode on all partitions
         std::vector<hpx::future<void>> lazy_open;
@@ -61,11 +61,11 @@ namespace hpx::io {
         was_created_ = true;
     }
 
-    void io_dispatcher::initialise(std::string symbolic_base_name, std::size_t num_instances) {
+    void io_dispatcher::initialise(std::string symbolic_base_name, std::size_t chunk_size, std::size_t num_instances) {
         //create the partitions
         std::vector<hpx::id_type> localities = hpx::find_all_localities();
         hpx::future<std::vector<hpx::io::local_file>> result =
-                hpx::new_<hpx::io::local_file[]>(hpx::default_layout(localities), num_instances);
+                hpx::new_<hpx::io::local_file[]>(hpx::default_layout(localities), num_instances, chunk_size);
 
         // Do I need to get ?
         partitions_ = result.get();

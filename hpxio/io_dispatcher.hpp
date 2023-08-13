@@ -38,7 +38,7 @@ namespace hpx::io {
 
     private:
 
-        void initialise(std::string symbolic_base_name, std::size_t num_instances = std::size_t(-1));
+        void initialise(std::string symbolic_base_name, std::size_t chunk_size, std::size_t num_instances = std::size_t(-1));
 
     public:
         /// constructors
@@ -46,7 +46,8 @@ namespace hpx::io {
 
         io_dispatcher(std::string const &file_name, std::string const &mode,
                                std::string const& symbolic_name_base = "/hpxio/io_dispatcher",
-                               std::size_t num_instances = std::size_t(1));
+                               std::size_t num_instances = std::size_t(1),
+                               std::size_t chunk_size = std::size_t(4 * 1024));
 
         explicit io_dispatcher(hpx::future<hpx::id_type> &&id);
 

@@ -40,9 +40,9 @@ namespace hpx::io::server
 
             {
             public:
-                local_file() : current_buff_size(0), cache_number(0), valid_cache(false)
+                local_file(size_t chunk_size_ = (4 * 1024)) : current_buff_size(0), cache_number(0),
+                valid_cache(false), chunk_size(chunk_size_), file_size(0), fp_(NULL)
                 {
-                    fp_ = NULL;
                     file_name_.clear();
                 }
 
@@ -325,13 +325,13 @@ namespace hpx::io::server
 
                 std::FILE *fp_;
                 std::string file_name_;
-                off_t file_size;
+                off_t file_size{};
 
                 std::vector<std::pair<off_t, std::vector<char>>> lazy_writes;
                 std::vector<char> cache; // store chunk_size size of data here after a read.
                 size_t cache_number;
                 bool valid_cache;
-                size_t chunk_size = 4 * 1024; // 4 kbs
+                size_t chunk_size;
                 size_t current_buff_size;
             };
 

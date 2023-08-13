@@ -49,29 +49,19 @@ int hpx_main(hpx::program_options::variables_map& vm)
     size_t num_instances = vm["n"].as<size_t>();
 
     hpx::cout << "Number of localities: " << hpx::get_num_localities().get() << std::endl;
-
+    std::vector<char> read;
     // reading test
     {
         hpx::cout << "trying to create io_dispatcher with path:" << path << std::endl;
         // create io_dispatcher instance
         Timer timer_read;
-        hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances);
+        hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances, 16 * 1024);
         hpx::cout << "io_dispatcher created" << std::endl;
 
-        std::vector<char> read = comp.read_at(0, 10000);
-        std::vector<char> read_async = comp.read_at_async(0, 100000).get();
-
-        hpx::cout << "read:" << std::endl;
-        for (auto c: read)
-            hpx::cout << c;
-        hpx::cout << std::endl;
-
-        hpx::cout << "read async:" << std::endl;
-        for (auto c: read_async)
-            hpx::cout << c;
-        hpx::cout << std::endl;
+        read = comp.read_at(0, 10000);
     }
 
+    std::vector<char> data;
     // writing test
     {
         hpx::cout << "trying to create write io_dispatcher:" << path << std::endl;
@@ -80,7 +70,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
 
         hpx::cout << "writing into file \"test.out\"" << std::endl;
-        std::vector<char> data;
 
         srand(time(NULL));
         for (int i = 0; i < 100; ++i) {
@@ -88,12 +77,11 @@ int hpx_main(hpx::program_options::variables_map& vm)
         }
 
         comp_write.write_at_async(0, data).get();
-
-        hpx::cout << "file written: ";
-        for (auto c: data)
-            hpx::cout << c;
-        hpx::cout << std::endl;
     }
+    hpx::cout << "file written: ";
+    for (auto c: data)
+        hpx::cout << c;
+    hpx::cout << std::endl;
 
     hpx::cout << "test finished" << std::endl;
     return hpx::finalize();
