@@ -121,20 +121,22 @@ namespace hpx::io {
 
     std::vector<char> io_dispatcher::read_at_work(off_t offset, std::size_t size) {
 //        HPX_ASSERT(this->mode_ == "r" || this->mode_ == "r+" || this->mode_ == "w+" || this->mode_ == "a+");
-        int start = offset / bytes_per_partition_;
-        int end;
-        if (bytes_per_partition_)
-            end = std::min(static_cast<size_t>((offset + size) / bytes_per_partition_), num_partitions_ - 1);
-        else {
-            return partitions_[0].pread(size, offset).get();
+        if (!bytes_per_partition_) {
+            return std::vector<char>();
         }
+
+        int start = offset / bytes_per_partition_;
+        int end = std::min(static_cast<size_t>((offset + size) / bytes_per_partition_), num_partitions_ - 1);
+
         std::vector<hpx::future<std::vector<char>>> lazy_reads;
         std::vector<char> result;
 
-        for (int i = start; i <= end; i++) {
+        for (int i = start; i < end; i++) {
             off_t off_i = std::max(offset, i * bytes_per_partition_);
             lazy_reads.push_back(partitions_[i].pread((i + 1) * bytes_per_partition_ - off_i, off_i));
         }
+        off_t final_off = std::max(end * bytes_per_partition_, offset);
+        lazy_reads.push_back(partitions_[end].pread(offset + size - final_off, final_off));
 
         for (auto &read: lazy_reads) {
             std::vector<char> tmp = read.get();
