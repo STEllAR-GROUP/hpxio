@@ -118,6 +118,7 @@ namespace hpx::io::server
                 void read_work(size_t const count, std::vector<char> &result)
                 {
                     // TODO : If chunk size larger than file, segfaults.
+                    result.clear();
                     if (fp_ == NULL || count <= 0)
                     {
                         return;
@@ -126,43 +127,43 @@ namespace hpx::io::server
 
                     // Check if we can read from cache.
                     ssize_t ptr = ftell(fp_);
-//                    if (valid_cache && ptr >= cache_number * chunk_size && ptr + count < (cache_number + 1) * chunk_size) {
-//                        // Read from cache.
-//                        result.assign(cache.begin() + ptr - cache_number * chunk_size, cache.begin() + ptr - cache_number * chunk_size + count);
-//                        return;
-//                    }
 
                     // check if cache covers the request
-                    if (valid_cache) {
+                    if (valid_cache && // overlap check
+                    std::max((size_t) ptr, cache_number * chunk_size) < std::min(ptr + count, (cache_number + 1) * chunk_size)) {
                         if (ptr < cache_number * chunk_size) {
                             std::unique_ptr<char> tail(new char[cache_number * chunk_size - ptr]);
-                            ssize_t len = fread(tail.get(), 1, cache_number * chunk_size - ptr, fp_);
+                            ssize_t len = fread(tail.get(), 1, std::min(cache_number * chunk_size - ptr, cnt), fp_);
                             result.assign(tail.get(), tail.get() + len);
                             ptr += len;
                             cnt -= len;
                         }
-                        if (ptr >= cache_number * chunk_size) {
+                        if (cnt > 0 && ptr >= cache_number * chunk_size && ptr < (cache_number + 1) * chunk_size) {
                             // Read from cache.
-                            result.insert(result.end(), cache.begin(), min(cache.begin() + ptr - cache_number * chunk_size + cnt, cache.end()));
-                            size_t sz = std::min((size_t) (cache.end() - cache.begin()), ptr - cache_number * chunk_size + cnt);
+                            size_t start = ptr - cache_number * chunk_size;
+                            size_t end = std::min(start + cnt, cache.size());
+
+                            result.insert(result.end(), cache.begin() + start,cache.begin() + end);
+                            size_t sz = end - start;
+
                             //seek to sz elements forward
                             fseek(fp_, sz, SEEK_CUR);
                             ptr += sz;
                             cnt -= sz;
                         }
-                        if (ptr > (cache_number + 1) * chunk_size) {
+                        if (cnt > 0 && ptr >= (cache_number + 1) * chunk_size) {
                             // after cache
-                            std::unique_ptr<char> head(new char[ptr + cnt - (cache_number + 1) * chunk_size]);
-                            ssize_t len = fread(head.get(), 1, ptr + cnt - (cache_number + 1) * chunk_size, fp_);
+                            std::unique_ptr<char> head(new char[cnt]);
+                            ssize_t len = fread(head.get(), 1, cnt, fp_);
                             result.insert(result.end(), head.get(), head.get() + len);
                         }
                         return;
                     }
 
                     // If we cant, read and update cache
-                    std::unique_ptr<char> sp(new char[count]);
                     ssize_t end = (ptr + count + chunk_size - 1) / chunk_size;
                     end *= chunk_size;
+                    std::unique_ptr<char> sp(new char[end - ptr]);
                     ssize_t len = fread(sp.get(), 1, end - ptr, fp_);
 
                     if (len == 0)
@@ -170,11 +171,11 @@ namespace hpx::io::server
                         return;
                     }
 
-                    result.assign(sp.get(), sp.get() + len);
+                    result.assign(sp.get(), sp.get() + count);
                     valid_cache = true;
-                    cache_number = (ptr + len) / chunk_size;
-                    ssize_t len_cache = (ptr + len) % chunk_size;
-                    cache.assign(sp.get() + len - len_cache, sp.get() + len);
+                    // last chunk_size bytes are to be stored in cache
+                    cache_number = end / chunk_size - 1;
+                    cache.assign(sp.get() + len - chunk_size, sp.get() + len);
                 }
 
                 std::vector<char> pread(size_t const count, off_t const offset)

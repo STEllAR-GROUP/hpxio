@@ -75,6 +75,7 @@ int hpx_main(hpx::program_options::variables_map &vm) {
         for (int i = 0; i < n_ops; ++i) {
 //            data = comp.read_at_async(rand() % file_size, read_size).get();
             {
+                data.clear();
                 Timer x;
                 data = comp.read_at_async(i%3, read_size).get();
             }
