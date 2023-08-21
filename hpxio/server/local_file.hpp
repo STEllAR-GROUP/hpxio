@@ -122,18 +122,45 @@ namespace hpx::io::server
                     {
                         return;
                     }
-
-                    std::unique_ptr<char> sp(new char[count]);
+                    size_t cnt = count;
 
                     // Check if we can read from cache.
                     ssize_t ptr = ftell(fp_);
-                    if (valid_cache && ptr >= cache_number * chunk_size && ptr + count < (cache_number + 1) * chunk_size) {
-                        // Read from cache.
-                        result.assign(cache.begin() + ptr - cache_number * chunk_size, cache.begin() + ptr - cache_number * chunk_size + count);
+//                    if (valid_cache && ptr >= cache_number * chunk_size && ptr + count < (cache_number + 1) * chunk_size) {
+//                        // Read from cache.
+//                        result.assign(cache.begin() + ptr - cache_number * chunk_size, cache.begin() + ptr - cache_number * chunk_size + count);
+//                        return;
+//                    }
+
+                    // check if cache covers the request
+                    if (valid_cache) {
+                        if (ptr < cache_number * chunk_size) {
+                            std::unique_ptr<char> tail(new char[cache_number * chunk_size - ptr]);
+                            ssize_t len = fread(tail.get(), 1, cache_number * chunk_size - ptr, fp_);
+                            result.assign(tail.get(), tail.get() + len);
+                            ptr += len;
+                            cnt -= len;
+                        }
+                        if (ptr >= cache_number * chunk_size) {
+                            // Read from cache.
+                            result.insert(result.end(), cache.begin(), min(cache.begin() + ptr - cache_number * chunk_size + cnt, cache.end()));
+                            size_t sz = std::min((size_t) (cache.end() - cache.begin()), ptr - cache_number * chunk_size + cnt);
+                            //seek to sz elements forward
+                            fseek(fp_, sz, SEEK_CUR);
+                            ptr += sz;
+                            cnt -= sz;
+                        }
+                        if (ptr > (cache_number + 1) * chunk_size) {
+                            // after cache
+                            std::unique_ptr<char> head(new char[ptr + cnt - (cache_number + 1) * chunk_size]);
+                            ssize_t len = fread(head.get(), 1, ptr + cnt - (cache_number + 1) * chunk_size, fp_);
+                            result.insert(result.end(), head.get(), head.get() + len);
+                        }
                         return;
                     }
 
                     // If we cant, read and update cache
+                    std::unique_ptr<char> sp(new char[count]);
                     ssize_t end = (ptr + count + chunk_size - 1) / chunk_size;
                     end *= chunk_size;
                     ssize_t len = fread(sp.get(), 1, end - ptr, fp_);
@@ -225,7 +252,7 @@ namespace hpx::io::server
                     current_buff_size += buf.size();
                     if (current_buff_size > chunk_size) {
                             // Flush buffer and write.
-
+                        lazy_write_flush();
                     }
 
 //                    ssize_t result = 0;

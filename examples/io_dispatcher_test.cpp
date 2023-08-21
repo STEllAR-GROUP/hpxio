@@ -42,8 +42,7 @@ public:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-int hpx_main(hpx::program_options::variables_map& vm)
-{
+int hpx_main(hpx::program_options::variables_map &vm) {
     // extract command line argument
     std::string path = vm["path"].as<std::string>();
     size_t num_instances = vm["n"].as<size_t>();
@@ -72,9 +71,20 @@ int hpx_main(hpx::program_options::variables_map& vm)
         Timer timer_read;
         hpx::io::io_dispatcher comp(path, "r", "/hpxio/io_dispatcher", num_instances, chunk_size);
         hpx::cout << "io_dispatcher created" << std::endl;
+        std::vector<char> data;
+        for (int i = 0; i < n_ops; ++i) {
+//            data = comp.read_at_async(rand() % file_size, read_size).get();
+            {
+                Timer x;
+                data = comp.read_at_async(i%3, read_size).get();
+            }
 
-        for (int i = 0; i< n_ops; ++i) {
-            comp.read_at_async(rand() % file_size, read_size).get();
+            //output data
+            hpx::cout << "data: ";
+            for (auto c: data) {
+                hpx::cout << c;
+            }
+            hpx::cout << std::endl;
         }
     }
 
@@ -89,9 +99,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
         hpx::cout << "writing into file \"test.out\"" << std::endl;
 
         srand(time(NULL));
-        auto generator = [](){return 'a' + (rand() % 26);};
-        for (int j = 0; j < n_ops; ++j)
-        {
+        auto generator = []() { return 'a' + (rand() % 26); };
+        for (int j = 0; j < n_ops; ++j) {
             data.resize(write_size);
             hpx::ranges::generate(data, generator);
 
@@ -104,26 +113,25 @@ int hpx_main(hpx::program_options::variables_map& vm)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
     // Configure application-specific options
     hpx::program_options::options_description
             desc_commandline("Usage: " HPX_APPLICATION_STRING " [options]");
 
     desc_commandline.add_options()
-            ( "path" , hpx::program_options::value<std::string>()->default_value(std::string("/home/arnav/project/gsoc/test_files/new.txt")),
-              "file path to place the testing files.")
-            ( "n", hpx::program_options::value<std::size_t>()->default_value(1),
-              "number of local_file instances to create.")
-            ( "chunk-size", hpx::program_options::value<std::size_t>()->default_value(4 * 1024),
-              "chunk size to use for the file operations.")
+            ("path", hpx::program_options::value<std::string>()->default_value(
+                     std::string("/home/arnav/project/gsoc/test_files/new.txt")),
+             "file path to place the testing files.")
+            ("n", hpx::program_options::value<std::size_t>()->default_value(1),
+             "number of local_file instances to create.")
+            ("chunk-size", hpx::program_options::value<std::size_t>()->default_value(4 * 1024),
+             "chunk size to use for the file operations.")
             ("read-size", hpx::program_options::value<std::size_t>()->default_value(4 * 1024),
              "read size to use for the file operations.")
             ("write-size", hpx::program_options::value<std::size_t>()->default_value(4 * 1024),
              "write size to use for the file operations.")
             ("n-ops", hpx::program_options::value<std::size_t>()->default_value(10000),
-             "number of operations to perform.")
-            ;
+             "number of operations to perform.");
     hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;
     // Initialize and run HPX
