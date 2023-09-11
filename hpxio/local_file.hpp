@@ -4,37 +4,40 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(HPX_COMPONENTS_IO_LOCAL_FILE_HPP_AUG_26_2014_1102AM)
-#define HPX_COMPONENTS_IO_LOCAL_FILE_HPP_AUG_26_2014_1102AM
+#pragma once
 
-#include <hpx/hpx_fwd.hpp>
-#include <hpx/include/client.hpp>
+#include <hpx/config.hpp>
+#if !defined(HPX_COMPUTE_DEVICE_CODE)
+#include <hpx/include/components.hpp>
 #include <hpxio/server/local_file.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace hpx { namespace io
+namespace hpx::io
 {
+
     ///////////////////////////////////////////////////////////////////////////
-    // The \a local_file class is the client side representation of a
-    // concrete \a server#local_file component
+    /// The \a local_file class is the client side representation of a
+    /// concrete \a server#local_file component
     class local_file :
-        public components::client_base<local_file, server::local_file>
+public hpx::components::client_base<local_file, server::local_file>
     {
     private:
         typedef components::client_base<local_file, server::local_file>
             base_type;
 
     public:
-        local_file(naming::id_type gid) : base_type(gid) {}
+        local_file() {}
 
-        local_file(hpx::future<naming::id_type> && gid)
+        local_file(hpx::id_type&& gid) : base_type(std::move(gid)) {}
+
+        local_file(hpx::future<hpx::id_type> && gid)
           : base_type(std::move(gid))
         {}
 
-        lcos::future<void> open(std::string const& name, std::string const& mode)
+        hpx::future<void> open(std::string const& name, std::string const& mode)
         {
             typedef server::local_file::open_action action_type;
-            return hpx::async<action_type>(this->base_type::get_gid(),
+            return hpx::async<action_type>(this->get_id(),
                     name, mode);
         }
 
@@ -43,10 +46,10 @@ namespace hpx { namespace io
             return open(name, mode).get();
         }
 
-        lcos::future<bool> is_open()
+        hpx::future<bool> is_open()
         {
             typedef server::local_file::is_open_action action_type;
-            return hpx::async<action_type>(this->base_type::get_gid());
+            return hpx::async<action_type>(this->get_id());
         }
 
         bool is_open_sync()
@@ -54,10 +57,10 @@ namespace hpx { namespace io
             return is_open().get();
         }
 
-        lcos::future<void> close()
+        hpx::future<void> close()
         {
             typedef server::local_file::close_action action_type;
-            return hpx::async<action_type>(this->base_type::get_gid());
+            return hpx::async<action_type>(this->get_id());
         }
 
         void close_sync()
@@ -65,10 +68,10 @@ namespace hpx { namespace io
             return close().get();
         }
 
-        lcos::future<int> remove_file(std::string const& file_name)
+        hpx::future<int> remove_file(std::string const& file_name)
         {
             typedef server::local_file::remove_file_action action_type;
-            return hpx::async<action_type>(this->base_type::get_gid(),
+            return hpx::async<action_type>(this->get_id(),
                     file_name);
         }
 
@@ -77,10 +80,10 @@ namespace hpx { namespace io
             return remove_file(file_name).get();
         }
 
-        lcos::future<std::vector<char> > read(size_t const& count)
+        hpx::future<std::vector<char> > read(size_t const& count)
         {
             typedef server::local_file::read_action action_type;
-            return hpx::async<action_type>(this->base_type::get_gid(),
+            return hpx::async<action_type>(this->get_id(),
                     count);
         }
 
@@ -89,11 +92,11 @@ namespace hpx { namespace io
             return read(count).get();
         }
 
-        lcos::future<std::vector<char> > pread(ssize_t const count,
+        hpx::future<std::vector<char> > pread(ssize_t const count,
                 off_t const offset)
         {
             typedef server::local_file::pread_action action_type;
-            return hpx::async<action_type>(this->base_type::get_gid(),
+            return hpx::async<action_type>(this->get_id(),
                     count, offset);
         }
 
@@ -102,10 +105,10 @@ namespace hpx { namespace io
             return pread(count, offset).get();
         }
 
-        lcos::future<ssize_t> write(std::vector<char> const& buf)
+        hpx::future<ssize_t> write(std::vector<char> const& buf)
         {
             typedef server::local_file::write_action action_type;
-            return hpx::async<action_type>(this->base_type::get_gid(),
+            return hpx::async<action_type>(this->get_id(),
                     buf);
         }
 
@@ -114,11 +117,11 @@ namespace hpx { namespace io
             return write(buf).get();
         }
 
-        lcos::future<ssize_t> pwrite(std::vector<char> const& buf,
+        hpx::future<ssize_t> pwrite(std::vector<char> const& buf,
                 off_t const offset)
         {
             typedef server::local_file::pwrite_action action_type;
-            return hpx::async<action_type>(this->base_type::get_gid(),
+            return hpx::async<action_type>(this->get_id(),
                     buf, offset);
         }
 
@@ -127,10 +130,10 @@ namespace hpx { namespace io
             return pwrite(buf, offset).get();
         }
 
-        lcos::future<int> lseek(off_t const offset, int const whence)
+        hpx::future<int> lseek(off_t const offset, int const whence)
         {
             typedef server::local_file::lseek_action action_type;
-            return hpx::async<action_type>(this->base_type::get_gid(),
+            return hpx::async<action_type>(this->get_id(),
                     offset, whence);
         }
 
@@ -138,10 +141,25 @@ namespace hpx { namespace io
         {
             return lseek(offset, whence).get();
         }
+
+        hpx::future<off_t> tell()
+        {
+            typedef server::local_file::tell_action action_type;
+            return hpx::async<action_type>(this->get_id());
+        }
+
+        off_t tell_sync()
+        {
+            return tell().get();
+        }
+
+        void flush_write()
+        {
+            typedef server::local_file::lazy_write_flush_action action_type;
+            hpx::async<action_type>(this->get_id()).get();
+        }
     };
 
-}} // hpx::io
-
+} // hpx::io
 
 #endif
-
