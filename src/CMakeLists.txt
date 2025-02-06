@@ -19,7 +19,8 @@ if(HPX_DEFAULT_BUILD_TARGETS)
           FOLDER "Core/Components"
           HEADER_ROOT ${ROOT}
           SOURCES io_dispatcher.cpp ../hpxio/server/configuration.cpp
-          ESSENTIAL)
+          ESSENTIAL
+          DEPENDENCIES local_file_component)
 else()
   add_hpx_component(local_file
     FOLDER "Core/Components"
@@ -30,5 +31,5 @@ else()
           FOLDER "Core/Components"
           HEADER_ROOT ${ROOT}
           SOURCES io_dispatcher.cpp ../hpxio/server/configuration.cpp
-          )
+          DEPENDENCIES local_file_component)
 endif()
