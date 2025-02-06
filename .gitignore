@@ -6,3 +6,5 @@
 reference/
 sheneos/
 ./cmake/log.txt
+/out
+CMakePresets.json

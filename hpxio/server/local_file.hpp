@@ -54,7 +54,7 @@ namespace hpx::io::server
 
                 void open(std::string const &name, std::string const &mode)
                 {
-                    hpx::parallel::execution::io_pool_executor exec;
+                    hpx::execution::experimental ::io_pool_executor exec;
                     hpx::parallel::execution::post(exec, hpx::bind(&local_file::open_work, this, name, mode));
                 }
 
@@ -76,7 +76,7 @@ namespace hpx::io::server
 
                 void close()
                 {
-                    hpx::parallel::execution::io_pool_executor exec;
+                    hpx::execution::experimental ::io_pool_executor exec;
                     hpx::parallel::execution::post(exec, hpx::bind(&local_file::close_work, this));
                 }
 
@@ -94,7 +94,7 @@ namespace hpx::io::server
                 {
                     int result;
                     {
-                        hpx::parallel::execution::io_pool_executor exec;
+                        hpx::execution::experimental ::io_pool_executor exec;
                         hpx::parallel::execution::post(exec, hpx::bind(&local_file::remove_file_work, this, file_name, std::ref(result)));
                     }
                     return result;
@@ -109,7 +109,7 @@ namespace hpx::io::server
                 {
                     std::vector<char> result;
                     {
-                        hpx::parallel::execution::io_pool_executor exec;
+                        hpx::execution::experimental ::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::read_work, this, count, std::ref(result))).get();
                     }
                     return result;
@@ -182,7 +182,7 @@ namespace hpx::io::server
                 {
                     std::vector<char> result;
                     {
-                        hpx::parallel::execution::io_pool_executor exec;
+                        hpx::execution::experimental ::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::pread_work, this, count, offset, std::ref(result))).get();
                     }
                     return result;
@@ -215,7 +215,7 @@ namespace hpx::io::server
                 ssize_t lazy_write_flush() {
                     ssize_t result = 0;
                     {
-                        hpx::parallel::execution::io_pool_executor exec;
+                        hpx::execution::experimental ::io_pool_executor exec;
                         for (const auto& write_chunk : lazy_writes) {
                             auto buf = write_chunk.second;
                             auto offset = write_chunk.first;
@@ -230,7 +230,7 @@ namespace hpx::io::server
                 {
                     ssize_t result = 0;
                     {
-                        hpx::parallel::execution::io_pool_executor exec;
+                        hpx::execution::experimental ::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::write_work, this, buf, std::ref(result))).get();
                     }
                     return result;
@@ -258,7 +258,7 @@ namespace hpx::io::server
 
 //                    ssize_t result = 0;
 //                    {
-//                        hpx::parallel::execution::io_pool_executor exec;
+//                        hpx::execution::experimental ::io_pool_executor exec;
 //                        hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::pwrite_work, this, buf, offset, std::ref(result))).get();
 //                    }
 //                    return result;
@@ -296,7 +296,7 @@ namespace hpx::io::server
                 {
                     int result;
                     {
-                        hpx::parallel::execution::io_pool_executor exec;
+                        hpx::execution::experimental ::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::lseek_work, this, offset, whence, std::ref(result))).get();
                     }
                     return result;
@@ -317,7 +317,7 @@ namespace hpx::io::server
                 {
                     off_t result;
                     {
-                        hpx::parallel::execution::io_pool_executor exec;
+                        hpx::execution::experimental ::io_pool_executor exec;
                         hpx::parallel::execution::async_execute(exec, hpx::bind(&local_file::tell_work, this, std::ref(result))).get();
                     }
                     return result;
